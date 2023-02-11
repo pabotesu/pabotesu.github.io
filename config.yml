@@ -21,7 +21,7 @@ menu:
 
 params:
   showsource: true
-  contenturl: https://github.com/pabotesu/pabotesu.github.io/tree/main/content/posts
+  contenturl: https://github.com/pabotesu/pabotesu.github.io/tree/main/content/
   description: my-post-contents
   favicon: #favicon
   image: #ogp image

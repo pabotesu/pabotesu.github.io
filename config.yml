@@ -21,8 +21,8 @@ menu:
 
 params:
   showsource: true
-  contenturl: https://github.com/yourname/site-repo/tree/master/content/
-  description: Hello
+  contenturl: https://github.com/pabotesu/pabotesu.github.io/tree/main/content
+  description: my-post-contents
   favicon: #favicon
   image: #ogp image
   postnav: true

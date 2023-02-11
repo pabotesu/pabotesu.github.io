@@ -1,4 +1,4 @@
-[submodule "hugo-pabotesu-theme"]
-	path = hugo-pabotesu-theme
+[submodule "themes/hugo-pabotesu-theme"]
+	path = themes/hugo-pabotesu-theme
 	url = https://github.com/pabotesu/hugo-pabotesu-theme
 	branch = main

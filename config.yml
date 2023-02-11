@@ -1,0 +1,33 @@
+baseURL: http://example.org/
+languageCode: ja-jp
+title: /var/log/pabotesu
+theme: hugo-pabotesu-theme
+copyright: "&copy; 2023 pabotesu"
+
+menu:
+  header:
+    - name: About
+      weight: 1
+      url: /about
+
+    - name: Archives
+      weight: 2
+      url: /archives
+
+    - name: Tags
+      weight: 3
+      url: /tags
+       # newtab: true
+
+params:
+  showsource: true
+  contenturl: https://github.com/yourname/site-repo/tree/master/content/
+  description: Hello
+  favicon: #favicon
+  image: #ogp image
+  postnav: true
+
+markup:
+  highlight:
+    guessSyntax: true
+    style: monokai #see https://xyproto.github.io/splash/docs/all.html

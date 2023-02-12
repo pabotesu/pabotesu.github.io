@@ -5,7 +5,7 @@ tags: ["github",""]
 comments: false
 showToc: false
 ---
-## github ioでつまったわよ</dev>
+## github.ioでつまったわよ
 
-なんかつまったので、テストデプロイ。</dev>
-どうもDNSの問題だったぽい。。。よっし!</dev>
+なんかつまったので、テストデプロイ  
+どうもDNSの問題だったぽい・・・よしッ!

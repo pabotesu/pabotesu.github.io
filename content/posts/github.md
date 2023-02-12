@@ -5,4 +5,6 @@ tags: ["",""]
 comments: false
 showToc: false
 ---
+## github ioでつまったわよ
 なんかつまったので、テストデプロイ。
+どうもDNSの問題だったぽい。。。よっし!

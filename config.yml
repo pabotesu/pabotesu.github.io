@@ -1,4 +1,4 @@
-baseURL: https://pabotesu.dev
+baseURL: https://pabotesu.github.io
 languageCode: ja-jp
 title: /var/log/pabotesu
 theme: hugo-pabotesu-theme

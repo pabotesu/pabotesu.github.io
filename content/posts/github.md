@@ -2,6 +2,7 @@
 title: "Github"
 date: 2023-02-12T09:07:01Z
 tags: ["",""]
-comments: true
-showToc: true
+comments: false
+showToc: false
 ---
+なんかつまったので、テストデプロイ。

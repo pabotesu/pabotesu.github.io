@@ -13,6 +13,6 @@ layout: "single"
 
 ## Social Media
 
-[github.com　@pabotesu](https://github.com/pabotesu)  
-[twitter　@pab0tesu](https://twitter.com/pab0tesu)  
-[misskey　@pabotesu](https://misskey.io/@pabotesu)  
+[github.com     @pabotesu](https://github.com/pabotesu)  
+[twitter        @pab0tesu](https://twitter.com/pab0tesu)  
+[misskey        @pabotesu](https://misskey.io/@pabotesu)  

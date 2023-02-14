@@ -12,7 +12,7 @@ pabotesu
 
 - Name      : Lee Tesu ・・・{ _I call it ``pabotesu``_ }
 - Age       : 1997/06/28
-- Degree    : Bachelor of Engineering@[TEU](https://www.teu.ac.jp/)  
+- Degree    : Bachelor of Engineering@[TUT](https://www.teu.ac.jp/)  
 
 ## Social Media
 

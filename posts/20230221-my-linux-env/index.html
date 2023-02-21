@@ -1,0 +1,178 @@
+<!doctype html><html lang=ja-jp>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=icon href=https://pabotesu.github.io/favicon.ico>
+<link rel=stylesheet href=/css/style.min.css>
+<meta property="og:site_name" content="/var/log/pabotesu">
+<meta property="og:title" content="小生のLinux環境（+所感）">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pabotesu.github.io/posts/20230221-my-linux-env/">
+<meta property="og:description" content="my-post-contents">
+<meta name=description content="my-post-contents">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:title content="小生のLinux環境（+所感）">
+<meta name=twitter:description content="my-post-contents">
+<title>
+小生のLinux環境（+所感） - /var/log/pabotesu
+</title>
+<style>@import "https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css";code{font-family:fira code,monospace}</style>
+<script type=module>
+  import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe-lightbox.esm.min.js';
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '.post-content',
+    children: '.pswp-child',
+    pswpModule: () => import('https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.esm.min.js')
+  });
+  lightbox.init();
+</script>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.min.css>
+</head>
+<body>
+<div id=main>
+<header>
+<nav>
+<div class=site-logo>
+<a class=no-decoration href=https://pabotesu.github.io>
+/var/log/pabotesu
+</a>
+</div>
+<div class=menu-item>
+<span id=menu-button>menu</span>
+</div>
+</nav>
+<div id=popup-menu class=hide>
+<ul>
+<li>
+<a href=/about class=no-decoration>About</a>
+</li>
+<li>
+<a href=/archives class=no-decoration>Archives</a>
+</li>
+<li>
+<a href=/tags class=no-decoration>Tags</a>
+</li>
+</ul>
+</div>
+</header>
+<div class=content>
+<ol class=breadcrumb>
+<li><a href=https://pabotesu.github.io/>Home</a>
+<li><a href=https://pabotesu.github.io/posts/>Posts</a>
+<li>小生のLinux環境（+所感）
+</ol>
+</ol>
+<span class=post-title data-pagefind-body>小生のLinux環境（+所感）</span>
+<div class=post-meta>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+<time>2023-02-21 11:06:49</time>
+</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+<a href=https://github.com/pabotesu/pabotesu.github.io/tree/main/content/posts/20230221-my-linux-env.md target=_blank rel="noopener noreferrer">History</a>
+</span>
+<div>
+<span>
+<a href=https://pabotesu.github.io/tags/linux/>#linux</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/environment/>#environment</a>
+</span>
+</div>
+</div>
+<div class=toc>
+<details>
+<summary>Toc</summary>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#小生のlinux環境>小生のLinux環境</a>
+<ul>
+<li><a href=#os>OS</a></li>
+<li><a href=#ディスクトップ環境>ディスクトップ環境</a></li>
+<li><a href=#configファイル>configファイル</a></li>
+<li><a href=#所感>所感</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</details>
+</div>
+<article class=post-content data-pagefind-body>
+<h2 id=小生のlinux環境>小生のLinux環境&nbsp;<a class=headline-hash href=#小生のlinux環境>#</a> </h2>
+<h3 id=os>OS&nbsp;<a class=headline-hash href=#os>#</a> </h3>
+<ul>
+<li>Linux ディストリビューション：<a href=https://www.archlinux.jp/ target=_blank rel="noopener noreferrer">Arch Linux</a>
+</li>
+</ul>
+<h3 id=ディスクトップ環境>ディスクトップ環境&nbsp;<a class=headline-hash href=#ディスクトップ環境>#</a> </h3>
+<ul>
+<li>グラフィカルセッション：<a href=https://swaywm.org/ target=_blank rel="noopener noreferrer">wayland</a>
+</li>
+<li>ウィンドウマネージャ：<a href=https://swaywm.org/ target=_blank rel="noopener noreferrer">swaywm</a>
+</li>
+<li>ディスプレイマネージャ：<a href=https://github.com/canonical/lightdm target=_blank rel="noopener noreferrer">lightdm</a>
+<br>
+(lightdm lightdm-webkit2-greeter lightdm-webkit-theme-litarvan)</li>
+</ul>
+<h4 id=ツール郡>ツール郡&nbsp;<a class=headline-hash href=#ツール郡>#</a> </h4>
+<ul>
+<li>ステータスバー：<a href=https://github.com/Alexays/Waybar target=_blank rel="noopener noreferrer">waybar</a>
+</li>
+<li>ランチャー：<a href=https://github.com/Alexays/Waybar target=_blank rel="noopener noreferrer">wofi</a>
+</li>
+<li>ターミナル：<a href=https://github.com/alacritty/alacritty target=_blank rel="noopener noreferrer">Alacritty</a>
+& <a href=https://github.com/tmux/tmux/wiki target=_blank rel="noopener noreferrer">tmux</a>
+</li>
+<li>エディター：<a href=tmux>vim</a>
+& <a href=https://github.com/tmux/tmux/wiki target=_blank rel="noopener noreferrer">vscode</a>
+</li>
+<li>画面ロック：<a href=https://github.com/mortie/swaylock-effects target=_blank rel="noopener noreferrer">swaylock-effects</a>
+</li>
+<li>通知デーモン：<a href=https://github.com/emersion/mako target=_blank rel="noopener noreferrer">mako</a>
+</li>
+<li>各種通知バー：<a href=https://github.com/francma/wob target=_blank rel="noopener noreferrer">wob</a>
+</li>
+<li>ブラウザ：<a href=https://www.google.com/intl/ja_jp/chrome/ target=_blank rel="noopener noreferrer">google-chome</a>
+</li>
+<li>shell：<a href=https://www.zsh.org/ target=_blank rel="noopener noreferrer">zsh</a>
+※装飾は<a href=https://github.com/sorin-ionescu/prezto target=_blank rel="noopener noreferrer">prezto</a>
+</li>
+<li>dotfileの管理：<a href=https://www.chezmoi.io/ target=_blank rel="noopener noreferrer">chezmoi</a>
+</li>
+</ul>
+<h4 id=音響周り>音響周り&nbsp;<a class=headline-hash href=#音響周り>#</a> </h4>
+<ul>
+<li><a href=https://pipewire.org/ target=_blank rel="noopener noreferrer">pipewire</a>
+を使ってます</li>
+<li>インターフェース：<a href=https://wiki.archlinux.jp/index.php/PulseAudio target=_blank rel="noopener noreferrer">puleseaudio</a>
+</li>
+<li>イヤホン：<a href=https://www.angrymiao.com/cyberblade/ target=_blank rel="noopener noreferrer">cyberblade</a>
+※世界中のみんな、これ買え。</li>
+</ul>
+<p>(2023/02/21現在、とりあえずここまで追記予定)
+<img src=/img/20230221-linux-env/20230221-210508_grim_area.png alt=20230221-desktopenv>
+</p>
+<h3 id=configファイル>configファイル&nbsp;<a class=headline-hash href=#configファイル>#</a> </h3>
+<p><a href=https://github.com/pabotesu/dotfiles target=_blank rel="noopener noreferrer">https://github.com/pabotesu/dotfiles</a>
+</p>
+<h3 id=所感>所感&nbsp;<a class=headline-hash href=#所感>#</a> </h3>
+<p>Nixへの移行を考えよう！！！</p>
+</article>
+<div class=post-nav>
+<span class=post-nav-next>
+</span>
+<span class=post-nav-prev>
+<a href=https://pabotesu.github.io/posts/20230214/><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+<br>
+Github PagesでGithub Actionsを利用したビルド・デプロイ時にうまく自前のドメインを反映できない問題
+</a>
+</span>
+</div>
+<script src=https://utteranc.es/client.js repo=pabotesu/pabotesu.github.io issue-term=pathname theme=preferred-color-scheme crossorigin=anonymous async></script>
+</div>
+<footer>
+<div class=footer-text>&copy; 2023 pabotesu Powered by <a href=https://gohugo.io target=_blank rel="noopener noreferrer">Hugo</a></div>
+</footer>
+</div>
+<script src=/js/script.min.js></script>
+</body>
+</html>

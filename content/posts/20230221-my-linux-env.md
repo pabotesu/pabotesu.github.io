@@ -24,11 +24,11 @@ showToc: true
 - エディター：[vim](tmux) & [vscode](https://github.com/tmux/tmux/wiki)
 - 画面ロック：[swaylock-effects](https://github.com/mortie/swaylock-effects)
 - 通知デーモン：[mako](https://github.com/emersion/mako)
-- 各種通知バー：[wob](https://github.com/francma/wob)
+- 音量バー：[wob](https://github.com/francma/wob)
 - ブラウザ：[google-chome](https://www.google.com/intl/ja_jp/chrome/)
 - shell：[zsh](https://www.zsh.org/) ※装飾は[prezto](https://github.com/sorin-ionescu/prezto)
 - dotfileの管理：[chezmoi](https://www.chezmoi.io/)
-
+- クリップボード：[wl-clipboard](https://github.com/bugaevc/wl-clipboard) & [clipman](clipman)
 
 #### 音響周り
 - [pipewire](https://pipewire.org/)を使ってます
@@ -36,7 +36,7 @@ showToc: true
 - イヤホン：[cyberblade](https://www.angrymiao.com/cyberblade/)※世界中のみんな、これ買え。
 
 
-(2023/02/21現在、とりあえずここまで追記予定)
+(2023/02/21現在、今後追記予定)
 ![20230221-desktopenv](/img/20230221-linux-env/20230221-210508_grim_area.png)
 
 ### configファイル

@@ -28,7 +28,7 @@ showToc: true
 - ブラウザ：[google-chome](https://www.google.com/intl/ja_jp/chrome/)
 - shell：[zsh](https://www.zsh.org/) ※装飾は[prezto](https://github.com/sorin-ionescu/prezto)
 - dotfileの管理：[chezmoi](https://www.chezmoi.io/)
-- クリップボード：[wl-clipboard](https://github.com/bugaevc/wl-clipboard) & [clipman](clipman)
+- クリップボード：[wl-clipboard](https://github.com/bugaevc/wl-clipboard) & [clipman](https://github.com/yory8/clipman)
 
 #### 音響周り
 - [pipewire](https://pipewire.org/)を使ってます

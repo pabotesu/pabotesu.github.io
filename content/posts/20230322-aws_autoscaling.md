@@ -9,7 +9,8 @@ showToc: true
 ## AWSのAuto Scalingに関する一検討
 
 今回、AWSにおけるAuto Scalingに関するベストプラクティスに沿った内容で、
-リソース管理に関する検討を行う
+リソース管理に関する検討を行う。
+
 なお、リソースの展開にはTerraformを用いることする
 
 - リソース展開：https://github.com/pabotesu/aws-compute-auto_scaling

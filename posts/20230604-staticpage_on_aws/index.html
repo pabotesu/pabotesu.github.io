@@ -1,0 +1,392 @@
+<!doctype html><html lang=ja-jp>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=icon href=https://pabotesu.github.io/favicon.ico>
+<link rel=stylesheet href=/css/style.min.css>
+<meta property="og:site_name" content="/var/log/pabotesu">
+<meta property="og:title" content="20230604 StaticPage_on_aws">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pabotesu.github.io/posts/20230604-staticpage_on_aws/">
+<meta property="og:description" content="my-post-contents">
+<meta name=description content="my-post-contents">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:title content="20230604 StaticPage_on_aws">
+<meta name=twitter:description content="my-post-contents">
+<title>
+20230604 StaticPage_on_aws - /var/log/pabotesu
+</title>
+<style>@import "https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css";code{font-family:fira code,monospace}</style>
+<script type=module>
+  import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe-lightbox.esm.min.js';
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '.post-content',
+    children: '.pswp-child',
+    pswpModule: () => import('https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.esm.min.js')
+  });
+  lightbox.init();
+</script>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.min.css>
+</head>
+<body>
+<div id=main>
+<header>
+<nav>
+<div class=site-logo>
+<a class=no-decoration href=https://pabotesu.github.io>
+/var/log/pabotesu
+</a>
+</div>
+<div class=menu-item>
+<span id=menu-button>menu</span>
+</div>
+</nav>
+<div id=popup-menu class=hide>
+<ul>
+<li>
+<a href=/about class=no-decoration>About</a>
+</li>
+<li>
+<a href=/archives class=no-decoration>Archives</a>
+</li>
+<li>
+<a href=/tags class=no-decoration>Tags</a>
+</li>
+</ul>
+</div>
+</header>
+<div class=content>
+<ol class=breadcrumb>
+<li><a href=https://pabotesu.github.io/>Home</a>
+<li><a href=https://pabotesu.github.io/posts/>Posts</a>
+<li>20230604 StaticPage_on_aws
+</ol>
+</ol>
+<span class=post-title data-pagefind-body>20230604 StaticPage_on_aws</span>
+<div class=post-meta>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+<time>2023-06-04 12:35:52</time>
+</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+<a href=https://github.com/pabotesu/pabotesu.github.io/tree/main/content/posts/20230604-StaticPage_on_aws.md target=_blank rel="noopener noreferrer">History</a>
+</span>
+<div>
+<span>
+<a href=https://pabotesu.github.io/tags/aws/>#AWS</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/s3/>#s3</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/cloudfront/>#cloudfront</a>
+</span>
+</div>
+</div>
+<div class=toc>
+<details>
+<summary>Toc</summary>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#awsにて静的ページを実装する>AWSにて静的ページを実装する</a>
+<ul>
+<li><a href=#実装について>実装について</a></li>
+<li><a href=#実装の流れ>実装の流れ</a></li>
+<li><a href=#構成実装例>構成（実装例）</a></li>
+<li><a href=#実装後>実装後</a></li>
+<li><a href=#今後の方針>今後の方針</a></li>
+<li><a href=#参考>参考</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</details>
+</div>
+<article class=post-content data-pagefind-body>
+<h2 id=awsにて静的ページを実装する>AWSにて静的ページを実装する&nbsp;<a class=headline-hash href=#awsにて静的ページを実装する>#</a> </h2>
+<h3 id=実装について>実装について&nbsp;<a class=headline-hash href=#実装について>#</a> </h3>
+<ul>
+<li>実装：Terraform</li>
+<li>パブリッククラウドベンダ：AWS</li>
+<li>利用リソース：S3(Amazon Simple Storage Service), Amazon CloudFront</li>
+</ul>
+<h3 id=実装の流れ>実装の流れ&nbsp;<a class=headline-hash href=#実装の流れ>#</a> </h3>
+<ol>
+<li>Providerの設定</li>
+<li>各リソースのmodule実装</li>
+<li>enviromentの設定、実装、実行</li>
+</ol>
+<h3 id=構成実装例>構成（実装例）&nbsp;<a class=headline-hash href=#構成実装例>#</a> </h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>.
+├── enviroments
+│   └── dev
+│       ├── main.tf
+│       ├── provider.tf
+│       ├── terraform.tfstate
+│       ├── terraform.tfvars
+│       └── variables.tf
+└── modules
+    ├── cloudfront
+    │   ├── main.tf
+    │   ├── outputs.tf
+    │   └── variables.tf
+    ├── rout53
+    │   ├── main.tf
+    │   ├── outputs.tf
+    │   └── variables.tf
+    └── s3
+        ├── main.tf
+        ├── outputs.tf
+        └── variables.tf
+</code></pre></div><p>実装コード：<a href=https://github.com/pabotesu/aws-static_page target=_blank rel="noopener noreferrer">pabotesu/aws-static_page</a>
+</p>
+<hr>
+<p>1. Providerの設定</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>#----# provider.tf #----#
+
+terraform {
+  required_providers {
+    aws = {
+        source = &#34;hashicorp/aws&#34;
+    }
+  }
+}
+
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>#----# variables.tf #----#
+
+/*provider-settings*/
+variable &#34;aws_access_key&#34; {}
+variable &#34;aws_secret_key&#34; {}
+
+/*provider-select-region*/
+variable &#34;aws_region&#34; {
+  default = &#34;ap-northeast-1&#34;
+}
+
+/*aws-vpc-settings*/
+variable &#34;enviroments&#34; {
+  default     = &#34;develop&#34;
+}
+</code></pre></div><ul>
+<li>上記は当方の環境に合わせています。ご実装の際は、ご自身の環境に合わせていただければと思います。</li>
+</ul>
+<hr>
+<p>2. 各リソースのmodule実装</p>
+<h4 id=s3amazon-simple-storage-service>S3(Amazon Simple Storage Service)&nbsp;<a class=headline-hash href=#s3amazon-simple-storage-service>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>resource &#34;aws_s3_bucket&#34; &#34;static-www-bucket&#34; {
+    bucket_prefix = &#34;www.${var.enviroments}.static-bucket&#34;
+}
+
+/*acl [private]*/
+resource &#34;aws_s3_bucket_ownership_controls&#34; &#34;static-www-bucket-own&#34; {
+    bucket = aws_s3_bucket.static-www-bucket.id
+    rule {
+     object_ownership = &#34;BucketOwnerPreferred&#34;
+    }
+}
+
+resource &#34;aws_s3_bucket_acl&#34; &#34;static-www-bucket-acl&#34; {
+    depends_on = [aws_s3_bucket_ownership_controls.static-www-bucket-own]
+    bucket = aws_s3_bucket.static-www-bucket.id
+    acl =  &#34;private&#34;
+}
+/*acl [private]*/
+
+/*static-website setting*/
+resource &#34;aws_s3_bucket_website_configuration&#34; &#34;static-www-bucket-websiteconf&#34; {
+  bucket = aws_s3_bucket.static-www-bucket.id
+
+    index_document {
+     suffix = &#34;index.html&#34;
+    }
+
+    error_document {
+     key = &#34;error.html&#34;
+    }
+
+    routing_rule {
+    condition {
+      key_prefix_equals = &#34;docs/&#34;
+    }
+    redirect {
+      replace_key_prefix_with = &#34;documents/&#34;
+    }
+  }
+}
+/*static-website setting*/
+
+/*iam policy for static website bucket*/
+
+/* -&gt; iam policy for static website bucket data &lt;- */
+
+data &#34;aws_iam_policy_document&#34; &#34;static-www-bucket&#34; {
+    statement {
+    sid = &#34;Allow CloudFront&#34;
+    effect = &#34;Allow&#34;
+    principals {
+        type = &#34;AWS&#34;
+        identifiers = [&#34;${var.cdn-access-identity-iam_arn}&#34;]
+    }
+    actions = [
+        &#34;s3:GetObject&#34;
+    ]
+
+    resources = [
+        &#34;${aws_s3_bucket.static-www-bucket.arn}/*&#34;
+    ]
+  }
+}
+
+/* -&gt; iam policy for static website bucket data &lt;- */
+
+resource &#34;aws_s3_bucket_policy&#34; &#34;static-www-bucket-policy&#34; {
+    bucket = aws_s3_bucket.static-www-bucket.id
+    policy = data.aws_iam_policy_document.static-www-bucket.json
+}
+
+/*iam policy for static website bucket*/
+
+</code></pre></div><p>ここではHTMLファイルを配置するS3バケットについて設定を行っています</p>
+<ul>
+<li>
+<p>ACLを<code>private</code>としておりますが、Amazon CloudFront Origin Accecc Identityによってアクセスするのでprivateでも問題ないです</p>
+</li>
+<li>
+<p><code>aws_s3_bucket_website_configuration</code>にてwebホスティングを設定しています</p>
+</li>
+<li>
+<p>今回は基本的にCloudFrontにてwebページを公開するため、変数とした<code>cdn-access-identity-iam_arn</code>を設定しております</p>
+<ul>
+<li>よって、<code>s3:GetObject</code>ができれCloudFrontはコンテツを公開できるという寸法です</li>
+</ul>
+</li>
+</ul>
+<h4 id=cloudfront>CloudFront&nbsp;<a class=headline-hash href=#cloudfront>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>resource &#34;aws_cloudfront_distribution&#34; &#34;static-www&#34; {
+    enabled = true
+
+    origin {
+        domain_name = &#34;${var.static-www-bucket-regional_domain_name}&#34;
+        origin_id = &#34;${var.static-www-bucket-id}&#34;
+        s3_origin_config {
+          origin_access_identity = aws_cloudfront_origin_access_identity.static-www.cloudfront_access_identity_path
+        }
+    }
+
+    default_root_object = &#34;index.html&#34;
+
+    default_cache_behavior {
+        allowed_methods = [ &#34;GET&#34;, &#34;HEAD&#34; ]
+        cached_methods = [ &#34;GET&#34;, &#34;HEAD&#34; ]
+        target_origin_id = &#34;${var.static-www-bucket-id}&#34;
+        
+        forwarded_values {
+            query_string = false
+
+            cookies {
+              forward = &#34;none&#34;
+            }
+        }
+
+        viewer_protocol_policy = &#34;redirect-to-https&#34;
+        min_ttl = 0
+        default_ttl = 3600
+        max_ttl = 86400
+    }
+
+    restrictions {
+      geo_restriction {
+          restriction_type = &#34;whitelist&#34;
+          locations = [ &#34;JP&#34; ]
+      }
+    }
+    viewer_certificate {
+        cloudfront_default_certificate = true
+    }
+}
+
+resource &#34;aws_cloudfront_origin_access_identity&#34; &#34;static-www&#34; {}
+</code></pre></div><ul>
+<li>
+<p><code>origin</code>で配信元の設定を行っています</p>
+<ul>
+<li>S3バケットを変数として受け取り、同moduleにて利用できるようにしています</li>
+<li><code>s3_origin_config</code>内でS3バケットへのアクセス認証情報を指定しております</li>
+</ul>
+</li>
+<li>
+<p><code>default_cache_behavior</code>ではコンテンツデリバリーに利用する各設定値を記載</p>
+</li>
+<li>
+<p><code>restrictions</code>で配信地位域を指定</p>
+</li>
+<li>
+<p><code>viewer_certificate</code>ではCloudFrontのデフォルト証明書を利用</p>
+</li>
+</ul>
+<hr>
+<p>3. enviromentの設定、実装、実行</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>provider &#34;aws&#34; {
+    access_key = &#34;${var.aws_access_key}&#34;
+    secret_key = &#34;${var.aws_secret_key}&#34;
+    region =  &#34;${var.aws_region}&#34;
+}
+
+module &#34;aws_s3&#34; {
+    source = &#34;../../modules/s3&#34;
+    
+    #Set Palamater
+    enviroments                     = &#34;${var.enviroments}&#34;
+    cdn-access-identity-iam_arn     = &#34;${module.aws_cloudfront.cdn-access-identity-iam_arn}&#34;
+}
+
+module &#34;aws_cloudfront&#34; {
+    source = &#34;../../modules/cloudfront&#34;
+
+    #Set Palamater
+    enviroments                            = &#34;${var.enviroments}&#34;
+    static-www-bucket-id                   = &#34;${module.aws_s3.static-www-bucket-id}&#34;
+    static-www-bucket-regional_domain_name = &#34;${module.aws_s3.static-www-bucket-regional_domain_name}&#34;
+}
+</code></pre></div><ul>
+<li>
+<p>上記にて各モジュールの実行</p>
+<ul>
+<li>設定された値を各環境ごとの<code>main.tf</code>に持ってきて、各moduleに渡すことを想定しています</li>
+<li><code>enviroments/dev/variables.tf</code>にてdev環境の値を設定することを想定しています</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id=実装後>実装後&nbsp;<a class=headline-hash href=#実装後>#</a> </h3>
+<p>生成されたS3バケットに<code>index.html</code>ファイルを設置し、</p>
+<p>cloudfrontにて生成されたURLにアクセスすれば対象のファイルの内容が表示されます。</p>
+<h3 id=今後の方針>今後の方針&nbsp;<a class=headline-hash href=#今後の方針>#</a> </h3>
+<p>Route53にて任意のドメインと紐付けを行う実装もしていきたい。</p>
+<p><strong>To Be Continued&mldr;</strong></p>
+<h3 id=参考>参考&nbsp;<a class=headline-hash href=#参考>#</a> </h3>
+<ul>
+<li><a href=https://registry.terraform.io/modules/cn-terraform/s3-static-website/aws/latest target=_blank rel="noopener noreferrer">Terraform Module for AWS to host Static Website on S3</a>
+</li>
+<li><a href=https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution target=_blank rel="noopener noreferrer">Resource: aws_cloudfront_distribution</a>
+</li>
+</ul>
+</article>
+<div class=post-nav>
+<span class=post-nav-next>
+</span>
+<span class=post-nav-prev>
+<a href=https://pabotesu.github.io/posts/20230430-build-misskeyserver/><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+<br>
+20230430 Build Misskeyserver
+</a>
+</span>
+</div>
+<script src=https://utteranc.es/client.js repo=pabotesu/pabotesu.github.io issue-term=pathname theme=preferred-color-scheme crossorigin=anonymous async></script>
+</div>
+<footer>
+<div class=footer-text>&copy; 2023 pabotesu Powered by <a href=https://gohugo.io target=_blank rel="noopener noreferrer">Hugo</a></div>
+</footer>
+</div>
+<script src=/js/script.min.js></script>
+</body>
+</html>

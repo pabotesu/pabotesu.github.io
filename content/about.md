@@ -15,6 +15,7 @@ pabotesu
 - Degree    : Bachelor of Engineering@[TUT](https://www.teu.ac.jp/)  
 
 ## Certification
+
 - 基本情報技術者試験 "Fundamental Information Technology Engineer Examination"
 - AWS Certified Solutions Architect - Associate
 - AWS Certified Solutions Architect - Professional
@@ -30,7 +31,7 @@ pabotesu
 
 [github.com - @pabotesu](https://github.com/pabotesu)  
 [twitter - @pab0tesu](https://twitter.com/pab0tesu)  
-[misskey - @pabotesu](https://misskey.io/@pabotesu)  
+[misskey.io - @pabotesu](https://misskey.io/@pabotesu)  
 
 ## Contact
 

@@ -1,0 +1,528 @@
+<!doctype html><html lang=ja-jp>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=icon href=https://pabotesu.github.io/favicon.ico>
+<link rel=stylesheet href=/css/style.min.css>
+<meta property="og:site_name" content="/var/log/pabotesu">
+<meta property="og:title" content="20230606 BasicWebappTemplate_on_aws">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pabotesu.github.io/posts/20230606-basicwebapptemplate_on_aws/">
+<meta property="og:description" content="my-post-contents">
+<meta name=description content="my-post-contents">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:title content="20230606 BasicWebappTemplate_on_aws">
+<meta name=twitter:description content="my-post-contents">
+<title>
+20230606 BasicWebappTemplate_on_aws - /var/log/pabotesu
+</title>
+<style>@import "https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css";code{font-family:fira code,monospace}</style>
+<script type=module>
+  import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe-lightbox.esm.min.js';
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '.post-content',
+    children: '.pswp-child',
+    pswpModule: () => import('https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.esm.min.js')
+  });
+  lightbox.init();
+</script>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.min.css>
+</head>
+<body>
+<div id=main>
+<header>
+<nav>
+<div class=site-logo>
+<a class=no-decoration href=https://pabotesu.github.io>
+/var/log/pabotesu
+</a>
+</div>
+<div class=menu-item>
+<span id=menu-button>menu</span>
+</div>
+</nav>
+<div id=popup-menu class=hide>
+<ul>
+<li>
+<a href=/about class=no-decoration>About</a>
+</li>
+<li>
+<a href=/archives class=no-decoration>Archives</a>
+</li>
+<li>
+<a href=/tags class=no-decoration>Tags</a>
+</li>
+</ul>
+</div>
+</header>
+<div class=content>
+<ol class=breadcrumb>
+<li><a href=https://pabotesu.github.io/>Home</a>
+<li><a href=https://pabotesu.github.io/posts/>Posts</a>
+<li>20230606 BasicWebappTemplate_on_aws
+</ol>
+</ol>
+<span class=post-title data-pagefind-body>20230606 BasicWebappTemplate_on_aws</span>
+<div class=post-meta>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+<time>2023-06-06 12:10:54</time>
+</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+<a href=https://github.com/pabotesu/pabotesu.github.io/tree/main/content/posts/20230606-BasicWebappTemplate_on_aws.md target=_blank rel="noopener noreferrer">History</a>
+</span>
+<div>
+<span>
+<a href=https://pabotesu.github.io/tags/aws/>#AWS</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/ec2/>#ec2</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/vpc/>#vpc</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/terraform/>#Terraform</a>
+</span>
+</div>
+</div>
+<div class=toc>
+<details>
+<summary>Toc</summary>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#awsにてプリミティブなwebアプリのインフラを実装する>AWSにてプリミティブなwebアプリのインフラを実装する</a>
+<ul>
+<li><a href=#実装について>実装について</a></li>
+<li><a href=#実装の流れ>実装の流れ</a></li>
+<li><a href=#構成実装例>構成（実装例）</a></li>
+<li><a href=#実装後>実装後</a></li>
+<li><a href=#今後の方針>今後の方針</a></li>
+<li><a href=#参考>参考</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</details>
+</div>
+<article class=post-content data-pagefind-body>
+<h2 id=awsにてプリミティブなwebアプリのインフラを実装する>AWSにてプリミティブなwebアプリのインフラを実装する&nbsp;<a class=headline-hash href=#awsにてプリミティブなwebアプリのインフラを実装する>#</a> </h2>
+<h3 id=実装について>実装について&nbsp;<a class=headline-hash href=#実装について>#</a> </h3>
+<ul>
+<li>実装：Terraform</li>
+<li>パブリッククラウドベンダ：AWS</li>
+<li>利用リソース：EC2(Amazon Elastic Compute Cloud), VPC(Amazon Virtual Private Cloud)</li>
+</ul>
+<h3 id=実装の流れ>実装の流れ&nbsp;<a class=headline-hash href=#実装の流れ>#</a> </h3>
+<ol>
+<li>Providerの設定</li>
+<li>各リソースのmodule実装</li>
+<li>enviromentの設定、実装、実行</li>
+</ol>
+<h3 id=構成実装例>構成（実装例）&nbsp;<a class=headline-hash href=#構成実装例>#</a> </h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>.
+├── README.md
+├── enviroments
+│   └── env-01
+│       ├── main.tf
+│       ├── provider.tf
+│       ├── terraform.tfstate
+│       ├── terraform.tfvars
+│       └── variables.tf
+├── modules
+│   ├── autoscaling ※
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   ├── compute
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   ├── loadbalancer　※
+│   │   ├── main.tf
+│   │   ├── output.tf
+│   │   └── variables.tf
+│   ├── network
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   └── securitygroup
+│       ├── main.tf
+│       ├── output.tf
+│       └── variables.tf
+└── terraform.tfstate
+
+※未実装に付き、本稿では説明はございません。
+</code></pre></div><p>実装コード：
+※本来であれば、一つのリポジトリでブランチなどを切って追加していくべきですが、
+過去の実装を見返すため/別プロジェクトで利用したため、リポジトリごと分けています。</p>
+<ol>
+<li><a href=https://github.com/pabotesu/webapp_tpl_on_aws target=_blank rel="noopener noreferrer">まだ、moduleの考え方を理解せず実装してしまったときのリポジトリ</a>
+※こちらはRDSの実装も含まれています。</li>
+<li><a href=https://github.com/pabotesu/terraform_aws_basic_template target=_blank rel="noopener noreferrer">moduleにて実装してみたリポジトリ</a>
+</li>
+<li><a href=https://github.com/pabotesu/aws-compute-auto_scaling target=_blank rel="noopener noreferrer">追加リソース(ALB &amp;amp; autoscaling)を追加してみたリポジトリ</a>
+</li>
+</ol>
+<hr>
+<p>1. Providerの設定</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>#----# provider.tf #----#
+
+terraform {
+  required_providers {
+    aws = {
+      source  = &#34;hashicorp/aws&#34;
+      version = &#34;~&gt; 4.0&#34;
+    }
+  }
+}
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>#----# variables.tf #----#
+
+/*provider-settings*/
+variable &#34;aws_access_key&#34; {}
+variable &#34;aws_secret_key&#34; {}
+
+/*provider-select-region*/
+variable &#34;aws_region&#34; {
+  default = &#34;ap-northeast-1&#34;
+}
+
+/*aws-vpc-settings*/
+variable &#34;enviroments&#34; {
+  default     = &#34;test-1&#34;
+}
+variable &#34;vpc-cidr&#34; {
+  type        = string
+  default     = &#34;10.0.0.0/16&#34;
+}
+
+variable &#34;availability_zone&#34; {
+  default     = &#34;ap-northeast-1a&#34;
+}
+
+
+variable &#34;public-subnets&#34; {
+  type        = string
+  default     = &#34;10.0.0.0/24&#34;
+}
+
+/*aws-ec2-settings*/
+variable &#34;ec2-config&#34; {
+      type = map(string)
+      default = {
+          image = &#34;ami-0ff21806645c5e492&#34;
+          machine_type = &#34;t2.micro&#34;
+          access_keypair = &#34;terraform_20221207&#34;
+          block_device_type = &#34;gp2&#34;
+          block_device_size = &#34;8&#34;
+      }
+  }
+</code></pre></div><ul>
+<li>上記は当方の環境に合わせています。ご実装の際は、ご自身の環境に合わせていただければと思います。</li>
+</ul>
+<hr>
+<p>2. 各リソースのmodule実装</p>
+<h4 id=computeec2amazon-elastic-compute-cloud>Compute：EC2(Amazon Elastic Compute Cloud)&nbsp;<a class=headline-hash href=#computeec2amazon-elastic-compute-cloud>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>
+#----# main.tf #----#
+
+resource &#34;aws_instance&#34; &#34;ec2&#34; {
+    ami = &#34;${lookup(var.ec2-config, &#34;image&#34;)}&#34;
+    instance_type = &#34;${lookup(var.ec2-config, &#34;machine_type&#34;)}&#34;
+    key_name = &#34;${lookup(var.ec2-config, &#34;access_keypair&#34;)}&#34;
+    associate_public_ip_address = &#34;true&#34;
+    vpc_security_group_ids = [&#34;${var.sg-for_basic_server-id}&#34;]
+    subnet_id = &#34;${var.public-subnets-ids}&#34;
+    root_block_device {
+        volume_type = &#34;${lookup(var.ec2-config, &#34;block_device_type&#34;)}&#34;
+        volume_size = &#34;${lookup(var.ec2-config, &#34;block_device_size&#34;)}&#34;
+    }
+    #user_data = &#34;${file(&#34;${lookup(var.ec2-config, &#34;user-file&#34;)}&#34;)}&#34;
+
+    tags = {
+       Name = &#34;basic_server-${var.enviroments}&#34;
+    }
+}
+
+</code></pre></div><ul>
+<li>上記実装例では基本的に、<code>variables.tf</code>にて記載されている設定内容を参照し、
+リソースを展開しております</li>
+<li>また、VPCにて指定されたazの個数ごとにインスタンスの展開を行えます（※以下イメージを示します）</li>
+</ul>
+<h4 id=networkvpcamazon-virtual-private-cloud>Network：VPC(Amazon Virtual Private Cloud)&nbsp;<a class=headline-hash href=#networkvpcamazon-virtual-private-cloud>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>
+/*-----------------------------vpc settings--------------------------------*/
+resource &#34;aws_vpc&#34; &#34;vpc&#34; {
+  cidr_block           = &#34;${var.vpc-cidr}&#34;
+  instance_tenancy     = &#34;default&#34;
+  enable_dns_support   = &#34;true&#34;
+  enable_dns_hostnames = &#34;true&#34;
+
+  tags = {
+    Name = &#34;${var.enviroments}-vpc&#34;
+  }
+}
+ resource &#34;aws_internet_gateway&#34; &#34;internet-gateway&#34; {
+   vpc_id = &#34;${aws_vpc.vpc.id}&#34;
+   tags = {
+     Name = &#34;${var.enviroments}-igw&#34;
+   }
+}
+/*--------------------------------------end------------------------------------------*/
+
+/*-----------------------------public subnet settings--------------------------------*/
+resource &#34;aws_subnet&#34; &#34;public-subnet&#34; {
+    vpc_id            = &#34;${aws_vpc.vpc.id}&#34; 
+    cidr_block        = &#34;${var.public-subnets}&#34;
+    availability_zone = &#34;${var.availability_zone}&#34;
+    map_public_ip_on_launch = true
+    tags = {
+        Name = &#34;${var.enviroments}-public-${var.availability_zone}&#34;
+    } 
+}
+
+resource &#34;aws_route_table&#34; &#34;public-route-table&#34; {
+    vpc_id = &#34;${aws_vpc.vpc.id}&#34;
+    route {
+        cidr_block = &#34;0.0.0.0/0&#34;
+        gateway_id = &#34;${aws_internet_gateway.internet-gateway.id}&#34;
+    }
+    tags = {
+        Name = &#34;${var.enviroments}-public-route-table&#34;
+    } 
+}
+
+resource &#34;aws_route_table_association&#34; &#34;public-route-table&#34; {
+     subnet_id = &#34;${aws_subnet.public-subnet.id}&#34;
+     route_table_id = &#34;${aws_route_table.public-route-table.id}&#34;
+     
+}
+/*--------------------------------------end------------------------------------------*/
+
+</code></pre></div><ul>
+<li>上記実装例では基本的に、<code>variables.tf</code>にて記載されている設定内容を参照し、
+リソースを展開しております</li>
+<li>なお、インスタンスの設定同様、指定されたAZの数だけ<code>Public Subnet</code>を展開いたします</li>
+<li>また、<code>Public Subnet</code>の設定においては<code>aws_route_table</code>にて外部へ向ける静的ルーティングも設定しております</li>
+<li>外部向けのゲートウェイについては<code>aws_internet_gateway</code>にて設定しております。</li>
+</ul>
+<h4 id=securitygroup>Securitygroup&nbsp;<a class=headline-hash href=#securitygroup>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>
+##############  for ec2 instance ##############
+resource &#34;aws_security_group&#34; &#34;for_basic_server&#34; {
+  name        = &#34;${var.enviroments}-for_basic_server-sg&#34;
+  description = &#34;${var.enviroments}-for_basic_server-sg&#34;
+  vpc_id      = &#34;${var.vpc-id}&#34;
+
+  tags = {
+        Name = &#34;${var.enviroments}-instance-sg&#34;
+    }
+}
+
+resource &#34;aws_security_group_rule&#34; &#34;basic_server-inbound_http&#34; {
+  type        = &#34;ingress&#34;
+  from_port   = 80
+  to_port     = 80
+  protocol    = &#34;tcp&#34;
+  cidr_blocks = [
+    &#34;0.0.0.0/0&#34;
+  ]
+  security_group_id = &#34;${aws_security_group.for_basic_server.id}&#34;
+}
+
+resource &#34;aws_security_group_rule&#34; &#34;basic_serevr-inbound_https&#34; {
+  type        = &#34;ingress&#34;
+  from_port   = 443
+  to_port     = 443
+  protocol    = &#34;tcp&#34;
+  cidr_blocks = [
+    &#34;0.0.0.0/0&#34;
+  ]
+  security_group_id = &#34;${aws_security_group.for_basic_server.id}&#34;
+}
+
+resource &#34;aws_security_group_rule&#34; &#34;basic_serevr-inbound_ssh&#34; {
+  type        = &#34;ingress&#34;
+  from_port   = 22
+  to_port     = 22
+  protocol    = &#34;tcp&#34;
+  cidr_blocks = [
+    &#34;0.0.0.0/0&#34;
+  ]
+  security_group_id = &#34;${aws_security_group.for_basic_server.id}&#34;
+}
+
+  resource &#34;aws_security_group_rule&#34; &#34;basic_serevr-outbound_allow-all&#34; {
+    type = &#34;egress&#34;
+    from_port = &#34;0&#34;
+    to_port = &#34;0&#34;
+    protocol = &#34;-1&#34;
+    cidr_blocks = [&#34;0.0.0.0/0&#34;]
+    security_group_id = &#34;${aws_security_group.for_basic_server.id}&#34;
+  }
+############## for ec2 instance ##############
+
+############## for loadbalancer  ##############
+  resource &#34;aws_security_group&#34; &#34;for_loadbalancer&#34; {
+  name        = &#34;${var.enviroments}-for_loadbalancer-sg&#34;
+  description = &#34;${var.enviroments}-for_loadbalancer-sg&#34;
+  vpc_id      = &#34;${var.vpc-id}&#34;
+
+  tags = {
+        Name = &#34;${var.enviroments}-loadbalancer-sg&#34;
+    }
+}
+
+resource &#34;aws_security_group_rule&#34; &#34;loadbalancer-inbound_http&#34; {
+  type        = &#34;ingress&#34;
+  from_port   = 80
+  to_port     = 80
+  protocol    = &#34;tcp&#34;
+  cidr_blocks = [
+    &#34;0.0.0.0/0&#34;
+  ]
+  security_group_id = &#34;${aws_security_group.for_loadbalancer.id}&#34;
+}
+
+resource &#34;aws_security_group_rule&#34; &#34;loadbalancer-inbound_https&#34; {
+  type        = &#34;ingress&#34;
+  from_port   = 443
+  to_port     = 443
+  protocol    = &#34;tcp&#34;
+  cidr_blocks = [
+    &#34;0.0.0.0/0&#34;
+  ]
+  security_group_id = &#34;${aws_security_group.for_loadbalancer.id}&#34;
+}
+
+resource &#34;aws_security_group_rule&#34; &#34;loadbalancer-outbound_allow-all&#34; {
+    type = &#34;egress&#34;
+    from_port = &#34;0&#34;
+    to_port = &#34;0&#34;
+    protocol = &#34;-1&#34;
+    cidr_blocks = [&#34;0.0.0.0/0&#34;]
+    security_group_id = &#34;${aws_security_group.for_loadbalancer.id}&#34;
+  }
+############## for loadbalancer  ##############
+
+</code></pre></div><ul>
+<li>
+<p>ここでは比較的わかりやすいですが、インスタンスにに対する各<code>security_group</code>（許可するポート）を設定しております。</p>
+</li>
+<li>
+<p>また、ここでは上記のように許可するポートを自由に追加するような構成ではなく、あえて開放するポートを統一することで、各環境でも同様の構成で開発・テスト等を実施することを想定しております。</p>
+</li>
+</ul>
+<hr>
+<p>3. enviromentの設定、実装、実行</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>
+provider &#34;aws&#34; {
+  access_key = &#34;${var.aws_access_key}&#34;
+  secret_key = &#34;${var.aws_secret_key}&#34;
+  region = &#34;${var.aws_region}&#34;
+}
+
+module &#34;aws_vpc&#34; {
+  source = &#34;../../modules/network&#34;
+
+  #Set Palamater
+  enviroments       = &#34;${var.enviroments}&#34;
+  vpc-cidr          = &#34;${var.vpc-cidr}&#34;
+  availability_zone = &#34;${var.availability_zone}&#34;
+  public-subnets    = &#34;${var.public-subnets}&#34;
+}
+
+module &#34;aws_sg&#34; {
+  source = &#34;../../modules/securitygroup&#34;
+
+  #Set Palamater
+  enviroments       = &#34;${var.enviroments}&#34;
+  vpc-id            = &#34;${module.aws_vpc.vpc-id}&#34;
+}
+
+module &#34;aws_lb&#34; {
+  source = &#34;../../modules/loadbalancer&#34;
+
+  #Set Palamater
+  enviroments       = &#34;${var.enviroments}&#34;
+  vpc-id            = &#34;${module.aws_vpc.vpc-id}&#34;
+  public-subnets    = &#34;${var.public-subnets}&#34;
+  sg-for_loadbalancer-id  = &#34;${module.aws_sg.sg-for_loadbalancer-id}&#34;
+}
+
+module &#34;aws_autoscaling&#34; {
+   source = &#34;../../modules/autoscaling&#34;
+
+  #Set Palamater
+  enviroments             = &#34;${var.enviroments}&#34;
+  vpc-id                  = &#34;${module.aws_vpc.vpc-id}&#34;
+  public-subnets-ids      = &#34;${module.aws_vpc.public-subnets-ids}&#34;
+  availability_zone       = &#34;${var.availability_zone}&#34;
+  sg-for_basic_server-id  = &#34;${module.aws_sg.sg-for_basic_server-id}&#34;
+  ec2-config              = &#34;${var.ec2-config}&#34;
+}
+
+module &#34;aws_ec2&#34; {
+  source = &#34;../../modules/compute&#34;
+
+  #Set Palamater
+  enviroments             = &#34;${var.enviroments}&#34;
+  vpc-id                  = &#34;${module.aws_vpc.vpc-id}&#34;
+  public-subnets-ids      = &#34;${module.aws_vpc.public-subnets-ids}&#34;
+  availability_zone       = &#34;${var.availability_zone}&#34;
+  sg-for_basic_server-id  = &#34;${module.aws_sg.sg-for_basic_server-id}&#34;
+  ec2-config              = &#34;${var.ec2-config}&#34;
+
+}
+
+</code></pre></div><ul>
+<li>
+<p>上記にて各モジュールの実行</p>
+<ul>
+<li>設定された値を各環境ごとの<code>main.tf</code>に持ってきて、各moduleに渡すことを想定しています</li>
+<li><code>enviroments/｛環境名｝/variables.tf</code>にて各環境の値を設定することを想定しています</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id=実装後>実装後&nbsp;<a class=headline-hash href=#実装後>#</a> </h3>
+<p>上記説明上では以下のようなリソースの展開が可能です。</p>
+<p>※以下ではazを2つ指定した結果となります。</p>
+<p>※以下ではRDS,S3のイメージがあり、すでに実装済みの範囲ではありますが本稿では説明をしておりません。</p>
+<p>※今後RDS,S3部分についてもmoduleとして実装後、本稿にも追記予定です。</p>
+<p>
+<img src=/img/20230606-BasicWebappTemplate_on_aws/deploy-resouce.png alt=20230606-BasicWebappTemplate_on_aws>
+</p>
+<h3 id=今後の方針>今後の方針&nbsp;<a class=headline-hash href=#今後の方針>#</a> </h3>
+<p>今回は比較的簡易なwebアプリ環境を実装しましたが、
+次回はキャッシュ(ElastiCache)等やDynamoDBなども含めた実装、
+Compute部分をコンテナやそのオーケストレーション環境(EKS)での実装の目指します。</p>
+<p><strong>To Be Continued&mldr;</strong></p>
+<h3 id=参考>参考&nbsp;<a class=headline-hash href=#参考>#</a> </h3>
+<ul>
+<li><a href=https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance target=_blank rel="noopener noreferrer">Terraform:Resource: aws_instance</a>
+</li>
+<li><a href=https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/vpc target=_blank rel="noopener noreferrer">Terraform:Resource: aws_vpc</a>
+</li>
+<li><a href=https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group target=_blank rel="noopener noreferrer">Terraform:Resource: aws_security_group</a>
+</li>
+</ul>
+</article>
+<div class=post-nav>
+<span class=post-nav-next>
+</span>
+<span class=post-nav-prev>
+<a href=https://pabotesu.github.io/posts/20230604-staticpage_on_aws/><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+<br>
+20230604 StaticPage_on_aws
+</a>
+</span>
+</div>
+<script src=https://utteranc.es/client.js repo=pabotesu/pabotesu.github.io issue-term=pathname theme=preferred-color-scheme crossorigin=anonymous async></script>
+</div>
+<footer>
+<div class=footer-text>&copy; 2023 pabotesu Powered by <a href=https://gohugo.io target=_blank rel="noopener noreferrer">Hugo</a></div>
+</footer>
+</div>
+<script src=/js/script.min.js></script>
+</body>
+</html>

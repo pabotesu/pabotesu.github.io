@@ -1,7 +1,7 @@
 ---
 title: "20230604 StaticPage_on_aws"
 date: 2023-06-04T12:35:52Z
-tags: ["aws","s3","cloudfront"]
+tags: ["aws","s3","cloudfront","terraform"]
 comments: true
 showToc: true
 ---
@@ -91,6 +91,8 @@ variable "enviroments" {
 #### S3(Amazon Simple Storage Service) 
 
 ```
+#----# main.tf #----#
+
 resource "aws_s3_bucket" "static-www-bucket" {
     bucket_prefix = "www.${var.enviroments}.static-bucket"
 }
@@ -165,6 +167,7 @@ resource "aws_s3_bucket_policy" "static-www-bucket-policy" {
 /*iam policy for static website bucket*/
 
 ```
+
 ここではHTMLファイルを配置するS3バケットについて設定を行っています
 
 - ACLを`private`としておりますが、Amazon CloudFront Origin Accecc Identityによってアクセスするのでprivateでも問題ないです
@@ -177,6 +180,8 @@ resource "aws_s3_bucket_policy" "static-www-bucket-policy" {
 #### CloudFront
 
 ```
+#----# main.tf #----#
+
 resource "aws_cloudfront_distribution" "static-www" {
     enabled = true
 
@@ -235,6 +240,8 @@ resource "aws_cloudfront_origin_access_identity" "static-www" {}
 
 3\. enviromentの設定、実装、実行
 ```
+#----# main.tf #----#
+
 provider "aws" {
     access_key = "${var.aws_access_key}"
     secret_key = "${var.aws_secret_key}"

@@ -84,16 +84,99 @@
 <summary>Toc</summary>
 <nav id=TableOfContents>
 <ul>
-<li><a href=#misskeyサーバを建てたゾ>Misskeyサーバを建てたゾ！</a></li>
+<li><a href=#misskeyサーバを実装する>Misskeyサーバを実装する</a>
+<ul>
+<li><a href=#実装について>実装について</a></li>
+<li><a href=#実装の流れ>実装の流れ</a></li>
+<li><a href=#構成実装例>構成（実装例）</a></li>
+<li><a href=#実装後>実装後</a></li>
+<li><a href=#おまけ>おまけ</a></li>
+<li><a href=#参考>参考</a></li>
+</ul>
+</li>
 </ul>
 </nav>
 </details>
 </div>
 <article class=post-content data-pagefind-body>
-<h2 id=misskeyサーバを建てたゾ>Misskeyサーバを建てたゾ！&nbsp;<a class=headline-hash href=#misskeyサーバを建てたゾ>#</a> </h2>
-<p>ここだ！！！！
-<a href=https://thxdaddy.xyz/ target=_blank rel="noopener noreferrer">https://thxdaddy.xyz/</a>
+<h2 id=misskeyサーバを実装する>Misskeyサーバを実装する&nbsp;<a class=headline-hash href=#misskeyサーバを実装する>#</a> </h2>
+<h3 id=実装について>実装について&nbsp;<a class=headline-hash href=#実装について>#</a> </h3>
+<ul>
+<li>実装対象：misskeyサーバ</li>
+<li>利用リソース：自宅サーバ、cloudflare</li>
+<li>ハイパバイザ：proxmox</li>
+</ul>
+<h3 id=実装の流れ>実装の流れ&nbsp;<a class=headline-hash href=#実装の流れ>#</a> </h3>
+<ol>
+<li>proxmox上に仮想マシン立ち上げ、misskeyサーバを構成する</li>
+<li>cloudflareにてCDN設定</li>
+</ol>
+<h3 id=構成実装例>構成（実装例）&nbsp;<a class=headline-hash href=#構成実装例>#</a> </h3>
+<p><a href=https://thxdaddy.xyz/ target=_blank rel="noopener noreferrer">https://thxdaddy.xyz/</a>
 </p>
+<hr>
+<p>1. proxmox上に仮想マシン立ち上げ、misskeyサーバを構成する</p>
+<ul>
+<li>
+<p>以下参考にmisskeyサーバを実装いたしました。
+<a href=https://misskey-hub.net/docs/install/manual.html target=_blank rel="noopener noreferrer">Misskey構築の手引き</a>
+</p>
+</li>
+<li>
+<p>proxmoxの様子
+<img src=/img/20230430-build-misskeyserver/20230607-1941_proxmox.png alt=20230607-194100_proxmox>
+</p>
+</li>
+</ul>
+<p>2. cloudflareにてCDN設定</p>
+<ul>
+<li>
+<p>以下のようにCloudFlare<code>Zero Trust</code>のTunnnelを設定
+<img src=/img/20230430-build-misskeyserver/20230607-2053_cloudflare.JPG alt=20230607-2053_cloudflare>
+</p>
+</li>
+<li>
+<p>その後、<code>1. proxmox上に仮想マシン立ち上げ、misskeyサーバを構成する</code>
+にて実装したサーバに<code>cloudflareのAPI</code>のインストールと
+<code>設定したトンネルの接続コマンド（設定時提示されます。）</code>を実行します。</p>
+</li>
+<li>
+<p>基本的に以上でサーバを公開できます。</p>
+</li>
+</ul>
+<h3 id=実装後>実装後&nbsp;<a class=headline-hash href=#実装後>#</a> </h3>
+<ul>
+<li>これで一国一城の主となったわけです・・・</li>
+</ul>
+<h3 id=おまけ>おまけ&nbsp;<a class=headline-hash href=#おまけ>#</a> </h3>
+<ul>
+<li>
+<p>Misskey v13でAn error has occurred!が発生する
+<img src=/img/20230430-build-misskeyserver/20230607-2051_misskeyerror.png alt=20230607-2051_misskeyerror>
+</p>
+<ul>
+<li>
+<p>以下記載のようにCloudflareのAuto Minifyの影響のようです。</p>
+<ul>
+<li>CloudFlareで構成ルール等を使ってAuto Minifyをオフにすると解決します。</li>
+</ul>
+<p><a href=https://github.com/misskey-dev/misskey/issues/9791 target=_blank rel="noopener noreferrer">Misskey is not opening properly in 13.3.1 #9791</a>
+</p>
+</li>
+</ul>
+</li>
+<li>
+<p>実際に動いてるサーバくん</p>
+</li>
+</ul>
+<p>
+<img src=/img/20230430-build-misskeyserver/20230206_1910_runningserver.jpg alt=20230206_1910_runningserver>
+</p>
+<h3 id=参考>参考&nbsp;<a class=headline-hash href=#参考>#</a> </h3>
+<ul>
+<li><a href=https://misskey-hub.net/docs/install/manual.html target=_blank rel="noopener noreferrer">Misskey構築の手引き</a>
+</li>
+</ul>
 </article>
 <div class=post-nav>
 <span class=post-nav-next>

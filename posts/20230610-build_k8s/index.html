@@ -1,0 +1,273 @@
+<!doctype html><html lang=ja-jp>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=icon href=https://pabotesu.github.io/favicon.ico>
+<link rel=stylesheet href=/css/style.min.css>
+<meta property="og:site_name" content="/var/log/pabotesu">
+<meta property="og:title" content="20230610 Build k8s">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pabotesu.github.io/posts/20230610-build_k8s/">
+<meta property="og:description" content="my-post-contents">
+<meta name=description content="my-post-contents">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:title content="20230610 Build k8s">
+<meta name=twitter:description content="my-post-contents">
+<title>
+20230610 Build k8s - /var/log/pabotesu
+</title>
+<style>@import "https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css";code{font-family:fira code,monospace}</style>
+<script type=module>
+  import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe-lightbox.esm.min.js';
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '.post-content',
+    children: '.pswp-child',
+    pswpModule: () => import('https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.esm.min.js')
+  });
+  lightbox.init();
+</script>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.min.css>
+</head>
+<body>
+<div id=main>
+<header>
+<nav>
+<div class=site-logo>
+<a class=no-decoration href=https://pabotesu.github.io>
+/var/log/pabotesu
+</a>
+</div>
+<div class=menu-item>
+<span id=menu-button>menu</span>
+</div>
+</nav>
+<div id=popup-menu class=hide>
+<ul>
+<li>
+<a href=/about class=no-decoration>About</a>
+</li>
+<li>
+<a href=/archives class=no-decoration>Archives</a>
+</li>
+<li>
+<a href=/tags class=no-decoration>Tags</a>
+</li>
+</ul>
+</div>
+</header>
+<div class=content>
+<ol class=breadcrumb>
+<li><a href=https://pabotesu.github.io/>Home</a>
+<li><a href=https://pabotesu.github.io/posts/>Posts</a>
+<li>20230610 Build k8s
+</ol>
+</ol>
+<span class=post-title data-pagefind-body>20230610 Build k8s</span>
+<div class=post-meta>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+<time>2023-06-10 10:43:27</time>
+</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+<a href=https://github.com/pabotesu/pabotesu.github.io/tree/main/content/posts/20230610-build_k8s.md target=_blank rel="noopener noreferrer">History</a>
+</span>
+<div>
+<span>
+<a href=https://pabotesu.github.io/tags/linux/>#linux</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/k8s/>#k8s</a>
+</span>
+</div>
+</div>
+<div class=toc>
+<details>
+<summary>Toc</summary>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#セルフホストでkubernetesを構築する>セルフホストでKubernetesを構築する</a>
+<ul>
+<li><a href=#実装について>実装について</a></li>
+<li><a href=#実装の流れ>実装の流れ</a></li>
+<li><a href=#構成>構成</a></li>
+<li><a href=#実装後>実装後</a></li>
+<li><a href=#参考>参考</a></li>
+</ul>
+</li>
+</ul>
+</nav>
+</details>
+</div>
+<article class=post-content data-pagefind-body>
+<h2 id=セルフホストでkubernetesを構築する>セルフホストでKubernetesを構築する&nbsp;<a class=headline-hash href=#セルフホストでkubernetesを構築する>#</a> </h2>
+<h3 id=実装について>実装について&nbsp;<a class=headline-hash href=#実装について>#</a> </h3>
+<ul>
+<li>ハイパバイザ：ESXi</li>
+<li>ホストOS：Ubuntu 22.04</li>
+</ul>
+<h3 id=実装の流れ>実装の流れ&nbsp;<a class=headline-hash href=#実装の流れ>#</a> </h3>
+<ol>
+<li>仮想マシンの設定</li>
+<li>全ノードで共通の設定をする</li>
+<li>各ノードの設定をする
+<ol>
+<li>Masterノードにて設定する</li>
+<li>Workerノードにて設定する</li>
+</ol>
+</li>
+</ol>
+<h3 id=構成>構成&nbsp;<a class=headline-hash href=#構成>#</a> </h3>
+<ul>
+<li>Masterノード
+<ul>
+<li>ホスト名:lab-k8s-master-node</li>
+<li>構成:
+<ul>
+<li>vCPU:2</li>
+<li>RAM:4GB</li>
+<li>Disk:30GB</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Workerノード
+<ul>
+<li>ホスト名:lab-k8s-worker-node01</li>
+<li>構成:
+<ul>
+<li>vCPU:2</li>
+<li>RAM:4GB</li>
+<li>Disk:30GB</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>1. 仮想マシンの設定</p>
+<p>以下のように設定
+<img src=/img/20230610-build_k8s/20230610-225623_esxi-env.png alt=20230606-BasicWebappTemplate_on_aws>
+</p>
+<p>2. 全ノードで共通の設定をする</p>
+<ul>
+<li>各ノードのホストを/etc/hostsに記載</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# cat /etc/hosts
+127.0.0.1 localhost
+127.0.1.1 lab-k8s-master-node
+192.168.100.81 lab-k8s-master-node # Masterノード
+192.168.100.82 lab-k8s-worker-node01　# Workerノード
+192.168.100.83 lab-k8s-worker-node02  # 今後追加予定のWorkerノード
+
+# The following lines are desirable for IPv6 capable hosts
+::1     ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+</code></pre></div><ul>
+<li>swapを無効化</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# swapoff -a
+root@lab-k8s-master-node:~# sed -i &#39;/ swap / s/^\(.*\)$/#\1/g&#39; /etc/fstab
+</code></pre></div><ul>
+<li>カーネルモジュールをロード</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# tee /etc/modules-load.d/containerd.conf &lt;&lt;EOF
+overlay
+br_netfilter
+EOF
+root@lab-k8s-master-node:~# modprobe overlay
+root@lab-k8s-master-node:~# modprobe overlay
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# tee /etc/sysctl.d/kubernetes.conf &lt;&lt;EOF
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward = 1
+EOF
+</code></pre></div><ul>
+<li>containerdをインストール、起動・永続化</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# apt install -y curl gnupg2 software-properties-common apt-transport-https ca-certificates
+root@lab-k8s-master-node:~# curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg
+root@lab-k8s-master-node:~# add-apt-repository &#34;deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable&#34;
+root@lab-k8s-master-node:~# apt update
+root@lab-k8s-master-node:~# apt install -y containerd.io
+root@lab-k8s-master-node:~# containerd config default | sudo tee /etc/containerd/config.toml &gt;/dev/null 2&gt;&amp;1
+root@lab-k8s-master-node:~# sed -i &#39;s/SystemdCgroup \= false/SystemdCgroup \= true/g&#39; /etc/containerd/config.toml
+root@lab-k8s-master-node:~# systemctl restart containerd
+root@lab-k8s-master-node:~# systemctl enable containerd
+</code></pre></div><ul>
+<li>Kubernetes関連のパッケージをインストイール</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmour -o /etc/apt/trusted.gpg.d/kubernetes-xenial.gpg
+root@lab-k8s-master-node:~# apt-add-repository &#34;deb http://apt.kubernetes.io/ kubernetes-xenial main&#34;
+root@lab-k8s-master-node:~# apt update
+root@lab-k8s-master-node:~# apt install -y kubelet kubeadm kubectl
+root@lab-k8s-master-node:~# apt-mark hold kubelet kubeadm kubectl
+</code></pre></div><p>3. 各ノードの設定をする</p>
+<p>3-1. Masterノードにて設定する</p>
+<ul>
+<li>以下k8sを初期化
+<ul>
+<li>※ここで出力されるトークンを記録しましょう</li>
+</ul>
+</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# kubeadm init --control-plane-endpoint=lab-k8s-master-node
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# mkdir -p $HOME/.kube
+root@lab-k8s-master-node:~# sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+root@lab-k8s-master-node:~# sudo chown $(id -u):$(id -g) $HOME/.kube/config
+</code></pre></div><ul>
+<li>以下のyamlファイルを実行してCalicoをローカルk8sにデプロイ</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@k8s-master:~# kubectl apply -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+</code></pre></div><p>3-2. Workerノードにて設定する</p>
+<ul>
+<li><code>kubeadm join</code> を実行（クラスタに参加）</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>kubeadm join k8s-master:6443 --token pg46jl.pvynngmtqsrukf6l --discovery-token-ca-cert-hash sha256:${&#34;kubeadm init&#34;実行時に出力されたトークン情報}
+</code></pre></div><h3 id=実装後>実装後&nbsp;<a class=headline-hash href=#実装後>#</a> </h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@lab-k8s-master-node:~# kubectl get pod -A
+NAMESPACE              NAME                                          READY   STATUS    RESTARTS   AGE
+kube-system            calico-kube-controllers-6c99c8747f-4mvpd      1/1     Running   0          42h
+kube-system            calico-node-d28wl                             1/1     Running   0          42h
+kube-system            calico-node-d4gnf                             1/1     Running   0          42h
+kube-system            coredns-5d78c9869d-ctnc5                      1/1     Running   0          43h
+kube-system            coredns-5d78c9869d-fbsdf                      1/1     Running   0          43h
+kube-system            etcd-lab-k8s-master-node                      1/1     Running   0          43h
+kube-system            kube-apiserver-lab-k8s-master-node            1/1     Running   0          43h
+kube-system            kube-controller-manager-lab-k8s-master-node   1/1     Running   0          43h
+kube-system            kube-proxy-cwhfc                              1/1     Running   0          42h
+kube-system            kube-proxy-gc97b                              1/1     Running   0          43h
+kube-system            kube-scheduler-lab-k8s-master-node            1/1     Running   0          43h
+kubernetes-dashboard   dashboard-metrics-scraper-764cf47594-l6vzg    1/1     Running   0          42h
+kubernetes-dashboard   kubernetes-dashboard-68997bf576-vjgh2         1/1     Running   0          42h
+root@lab-k8s-master-node:~# kubectl get node
+NAME                    STATUS   ROLES           AGE   VERSION
+lab-k8s-master-node     Ready    control-plane   43h   v1.27.2
+lab-k8s-worker-node01   Ready    &lt;none&gt;          42h   v1.27.2
+</code></pre></div><ul>
+<li>今回はただk8sを建てただけなので、ここから様々なサービスを実装してみたい思います。</li>
+</ul>
+<h3 id=参考>参考&nbsp;<a class=headline-hash href=#参考>#</a> </h3>
+<p><a href=https://www.linuxtechi.com/install-kubernetes-on-ubuntu-22-04/ target=_blank rel="noopener noreferrer">How to Install Kubernetes Cluster on Ubuntu 22.04</a>
+</p>
+</article>
+<div class=post-nav>
+<span class=post-nav-next>
+</span>
+<span class=post-nav-prev>
+<a href=https://pabotesu.github.io/posts/20230606-basicwebapptemplate_on_aws/><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+<br>
+20230606 BasicWebappTemplate_on_aws
+</a>
+</span>
+</div>
+<script src=https://utteranc.es/client.js repo=pabotesu/pabotesu.github.io issue-term=pathname theme=preferred-color-scheme crossorigin=anonymous async></script>
+</div>
+<footer>
+<div class=footer-text>&copy; 2023 pabotesu Powered by <a href=https://gohugo.io target=_blank rel="noopener noreferrer">Hugo</a></div>
+</footer>
+</div>
+<script src=/js/script.min.js></script>
+</body>
+</html>

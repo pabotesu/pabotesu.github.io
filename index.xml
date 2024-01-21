@@ -1,4 +1,38 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>/var/log/pabotesu</title><link>https://pabotesu.github.io/</link><description>Recent content on /var/log/pabotesu</description><generator>Hugo -- gohugo.io</generator><language>ja-jp</language><copyright>&amp;copy; 2023 pabotesu</copyright><lastBuildDate>Sat, 10 Jun 2023 10:43:27 +0000</lastBuildDate><atom:link href="https://pabotesu.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>20230610 Build k8s</title><link>https://pabotesu.github.io/posts/20230610-build_k8s/</link><pubDate>Sat, 10 Jun 2023 10:43:27 +0000</pubDate><guid>https://pabotesu.github.io/posts/20230610-build_k8s/</guid><description>セルフホストでKubernetesを構築する 実装について ハイパバイザ：ESXi ホストOS：Ubuntu 22.04 実装の流れ 仮想マシンの設定 全ノードで共通の設定をする 各ノードの設定をする Masterノードにて設定する Workerノードにて設定する 構成 Masterノード ホスト名:lab-k8s-master-node 構成: vCPU:2 RAM:4GB Disk:30GB Workerノード ホスト名:lab-k8s-worker-node01 構成: vCPU:2 RAM:4GB Disk:30GB 1. 仮想マシンの設定
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>/var/log/pabotesu</title><link>https://pabotesu.github.io/</link><description>Recent content on /var/log/pabotesu</description><generator>Hugo -- gohugo.io</generator><language>ja-jp</language><copyright>&amp;copy; 2023 pabotesu</copyright><lastBuildDate>Sat, 20 Jan 2024 01:30:07 +0900</lastBuildDate><atom:link href="https://pabotesu.github.io/index.xml" rel="self" type="application/rss+xml"/><item><title>20240120 My NixOS Env</title><link>https://pabotesu.github.io/posts/20240120-my-nixos-env/</link><pubDate>Sat, 20 Jan 2024 01:30:07 +0900</pubDate><guid>https://pabotesu.github.io/posts/20240120-my-nixos-env/</guid><description>Nixという山に登る 注意点 本稿はNixで自身のデスクトップ環境を構築した際のお話となります。
+文章内ではあくまで当方の認識や考え等も述べている箇所もございますが、齟齬等ございましたら優しくご指摘いただければ大変助かります。
+また、本稿には他の技術に対する意見や他人の感想などが記載されている箇所もあり、気分を害する場合にはブラウザバックを推奨いたします。
+（※筆者の意見ではございますが、様々な技術には一長一短があり、その特定の技術だけが全面的に優れている等は一切思っておりません。
+「○○は最高！！」などと口走ってしまうことはありますが&amp;hellip;）
+ここまでOKであれば、どうぞ以下よりご一読いただければ幸甚の限りでございます。
+はじまり 恐れながら、人は冒険に出発するとき、ある程度の理由付けが必要なものと思います。
+例えば、「なんとかマスターになるために電気ネズミと故郷にサヨナラバイバイする」とか、
+「人間のことを知りたいから北方の天国に行くエルフ」とか、
+当方の場合、趣味であるデスクトップ盆栽の同士が集う掲示板で、とある画像が投稿されたことがきっかけです。
+そうです、めちゃめちゃ煽られました。
+私は以前にも記事 にしておりましたが、 メインの環境はArch Linuxを利用しておりました。
+Arch Linuxは非常ミニマムな構成で、多くのパッケージの最新バイナリが圧倒的に早く降ってくる、
+大変クレバーで攻めた印象を受けるLinuxディストリビューションと思っております。
+自分としてはその環境に大変満足していましたし、不自由はないものでした。
+（※今も非常に優れた選択肢の一つと思っております。）
+上記の画像を見た際には気分を害しましたし、他の技術を風刺しているのが見るに耐えませんでした。
+しかし、上記の画像を真っ向から言い返せるほどのバックボーンもなければ、その風刺に対して心当たりがあったのも事実です。
+気づけば肥大化している.dotfiles その場しのぎのスクリプト 日に日に増えていく埋もれた依存関係たち etc..etc.. これらの問題が解決できるのであれば、それはそれはどれほど素晴らしいものか&amp;hellip;!
+そもそも、食わず嫌いはよくないね&amp;hellip;
+よろしい、ならば使ってみよう&amp;hellip;!
+Nixについて 前ふりが長くなり申し訳ありません、、、
+ここからが本題です。
+Nis is 何 Nixとは&amp;hellip;
+正直様々な機能があり過ぎて説明しきることができませぬ、、、
+ラテン語では結晶の意を称し、その多くはクロスプラットフォームのパッケージマネージャーを指し示す場合が多い印象です。
+しかし、その実ビルドツールのような機能を有していたり、IaCのような特性を持っております。
+他のパッケージマネージャーと比較した際に最も特徴的な点としては環境の再現性が非常に高いところにあります。
+その再現性の高さに貢献している機能として、DerivationとNix storeがあります。
+DerivationとはNixがパッケージを導入する際に必要となる情報や要素が定義されているものとなります。
+例えば、依存関係、ソースコード、ビルドスクリプト、環境変数、アーキテクチャなどなど、、、
+こちらを入力として最終的な出力を生成しパッケージとしてビルドします。
+ビルドされたパッケージは/nix/store以下にハッシュ値を与えられ格納されます。
+ちなみに、/nix/store配下にビルド後のパッケージと一緒に格納されているdrvがつくファイルがDerivationとなります。
+❯ ls /nix/store | grep openssh 0f1agkdv114rpvvr8j8vgsnn5pqrqijz-openssh-9.6p1/ 4hlaavjnynzjcm9rah9bnsbmq1dfj4k5-openssh-9.6p1.drv 6r07d5qllsgxc8hkmzdwp24v5xi41fwm-openssh-9.5p1.tar.gz.drv gad46bs131izbnnj15jci4cr2kizcykj-openssh-9.6p1.drv jdccr7jfbbamylm1b7i03zyigh1352zv-openssh-9.6p1.tar.gz.drv jh340w9s38fkzzvz6g02a96xlja70qiy-openssh-9.6p1.drv l9ypx9ry9x3pkk8xfvr2r9lxpla6a00d-openssh-9.6p1/ qcgly1g00dg1d5in91gg79gsh5gpq14f-openssh-9.6p1.tar.gz.drv s3b4janyjwf7jac928n0dcp6fy3j5gh7-openssh-9.5p1/ y1i4d6803nxhvd0d0r39h6fyp9lbdlwj-openssh-9.5p1.drv ここで複数のバージョンのopensshが格納されているのが気になります。</description></item><item><title>20230610 Build k8s</title><link>https://pabotesu.github.io/posts/20230610-build_k8s/</link><pubDate>Sat, 10 Jun 2023 10:43:27 +0000</pubDate><guid>https://pabotesu.github.io/posts/20230610-build_k8s/</guid><description>セルフホストでKubernetesを構築する 実装について ハイパバイザ：ESXi ホストOS：Ubuntu 22.04 実装の流れ 仮想マシンの設定 全ノードで共通の設定をする 各ノードの設定をする Masterノードにて設定する Workerノードにて設定する 構成 Masterノード ホスト名:lab-k8s-master-node 構成: vCPU:2 RAM:4GB Disk:30GB Workerノード ホスト名:lab-k8s-worker-node01 構成: vCPU:2 RAM:4GB Disk:30GB 1. 仮想マシンの設定
 以下のように設定 2. 全ノードで共通の設定をする
 各ノードのホストを/etc/hostsに記載 root@lab-k8s-master-node:~# cat /etc/hosts 127.0.0.1 localhost 127.0.1.1 lab-k8s-master-node 192.168.100.81 lab-k8s-master-node # Masterノード 192.168.100.82 lab-k8s-worker-node01　# Workerノード 192.168.100.83 lab-k8s-worker-node02 # 今後追加予定のWorkerノード # The following lines are desirable for IPv6 capable hosts ::1 ip6-localhost ip6-loopback fe00::0 ip6-localnet ff00::0 ip6-mcastprefix ff02::1 ip6-allnodes ff02::2 ip6-allrouters swapを無効化 root@lab-k8s-master-node:~# swapoff -a root@lab-k8s-master-node:~# sed -i &amp;#39;/ swap / s/^\(.</description></item><item><title>20230606 BasicWebappTemplate_on_aws</title><link>https://pabotesu.github.io/posts/20230606-basicwebapptemplate_on_aws/</link><pubDate>Tue, 06 Jun 2023 12:10:54 +0000</pubDate><guid>https://pabotesu.github.io/posts/20230606-basicwebapptemplate_on_aws/</guid><description>AWSにてプリミティブなwebアプリのインフラを実装する 実装について 実装：Terraform パブリッククラウドベンダ：AWS 利用リソース：EC2(Amazon Elastic Compute Cloud), VPC(Amazon Virtual Private Cloud) 実装の流れ Providerの設定 各リソースのmodule実装 enviromentの設定、実装、実行 構成（実装例） . ├── README.md ├── enviroments │ └── env-01 │ ├── main.tf │ ├── provider.tf │ ├── terraform.tfstate │ ├── terraform.tfvars │ └── variables.tf ├── modules │ ├── autoscaling ※ │ │ ├── main.tf │ │ ├── outputs.tf │ │ └── variables.tf │ ├── compute │ │ ├── main.tf │ │ ├── outputs.</description></item><item><title>20230604 StaticPage_on_aws</title><link>https://pabotesu.github.io/posts/20230604-staticpage_on_aws/</link><pubDate>Sun, 04 Jun 2023 12:35:52 +0000</pubDate><guid>https://pabotesu.github.io/posts/20230604-staticpage_on_aws/</guid><description>AWSにて静的ページを実装する 実装について 実装：Terraform パブリッククラウドベンダ：AWS 利用リソース：S3(Amazon Simple Storage Service), Amazon CloudFront 実装の流れ Providerの設定 各リソースのmodule実装 enviromentの設定、実装、実行 構成（実装例） . ├── enviroments │ └── dev │ ├── main.tf │ ├── provider.tf │ ├── terraform.tfstate │ ├── terraform.tfvars │ └── variables.tf └── modules ├── cloudfront │ ├── main.tf │ ├── outputs.tf │ └── variables.tf ├── rout53 │ ├── main.tf │ ├── outputs.tf │ └── variables.tf └── s3 ├── main.tf ├── outputs.tf └── variables.</description></item><item><title>20230430 Build Misskeyserver</title><link>https://pabotesu.github.io/posts/20230430-build-misskeyserver/</link><pubDate>Sun, 30 Apr 2023 12:07:41 +0000</pubDate><guid>https://pabotesu.github.io/posts/20230430-build-misskeyserver/</guid><description>Misskeyサーバを実装する 実装について 実装対象：misskeyサーバ 利用リソース：自宅サーバ、cloudflare ハイパバイザ：proxmox 実装の流れ proxmox上に仮想マシン立ち上げ、misskeyサーバを構成する cloudflareにてCDN設定 構成（実装例） https://thxdaddy.xyz/ 1. proxmox上に仮想マシン立ち上げ、misskeyサーバを構成する
 以下参考にmisskeyサーバを実装いたしました。 Misskey構築の手引き proxmoxの様子 2. cloudflareにてCDN設定

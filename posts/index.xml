@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on /var/log/pabotesu</title><link>https://pabotesu.github.io/posts/</link><description>Recent content in Posts on /var/log/pabotesu</description><generator>Hugo -- gohugo.io</generator><language>ja-jp</language><copyright>&amp;copy; 2023 pabotesu</copyright><lastBuildDate>Tue, 15 Apr 2025 23:31:20 +0900</lastBuildDate><atom:link href="https://pabotesu.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>20250415 Wireguardでポート解放のような機能を実現する</title><link>https://pabotesu.github.io/posts/20250415-wireguard%E3%81%A7%E3%83%9D%E3%83%BC%E3%83%88%E8%A7%A3%E6%94%BE%E3%81%AE%E3%82%88%E3%81%86%E3%81%AA%E6%A9%9F%E8%83%BD%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/</link><pubDate>Tue, 15 Apr 2025 23:31:20 +0900</pubDate><guid>https://pabotesu.github.io/posts/20250415-wireguard%E3%81%A7%E3%83%9D%E3%83%BC%E3%83%88%E8%A7%A3%E6%94%BE%E3%81%AE%E3%82%88%E3%81%86%E3%81%AA%E6%A9%9F%E8%83%BD%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/</guid><description>Wireguardでポート解放のような機能を実現する 注意点 本稿で実装した機能については限定的な用途に絞っており、
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on /var/log/pabotesu</title><link>https://pabotesu.github.io/posts/</link><description>Recent content in Posts on /var/log/pabotesu</description><generator>Hugo -- gohugo.io</generator><language>ja-jp</language><copyright>&amp;copy; 2023 pabotesu</copyright><lastBuildDate>Tue, 15 Apr 2025 23:31:20 +0900</lastBuildDate><atom:link href="https://pabotesu.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>20250415 Wireguardでポート開放のような機能を実現する</title><link>https://pabotesu.github.io/posts/20250415-wireguard%E3%81%A7%E3%83%9D%E3%83%BC%E3%83%88%E8%A7%A3%E6%94%BE%E3%81%AE%E3%82%88%E3%81%86%E3%81%AA%E6%A9%9F%E8%83%BD%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/</link><pubDate>Tue, 15 Apr 2025 23:31:20 +0900</pubDate><guid>https://pabotesu.github.io/posts/20250415-wireguard%E3%81%A7%E3%83%9D%E3%83%BC%E3%83%88%E8%A7%A3%E6%94%BE%E3%81%AE%E3%82%88%E3%81%86%E3%81%AA%E6%A9%9F%E8%83%BD%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/</guid><description>Wireguardでポート開放のような機能を実現する 注意点 本稿で実装した機能については限定的な用途に絞っており、
 読者の皆様のネットワーク環境における安全性を確実に担保する保障はございません。
 試用される際は自己責任でお願いします。
 あと、普通に悪用厳禁です。
 はじまり 私事ではありますが、引越しを経て大きくネットワーク環境を変更するに至りました。
 詳しい言及は本稿では避けますが、一般的なIPv6環境(MAP-Eによる広告)と相成りました。
-お察しの通り、この状態だとポート解放はいささか難しいものがございます。
+お察しの通り、この状態だとポート開放はいささか難しいものがございます。
 特に最近の傾向ですと己がサービスをISPの網を通して公開するというのは避けがちとの所感を得ております。
-そこで、wiregurad を利用して擬似ポート解放のような物を実現できないかと思慮した次第でございます。
+そこで、wiregurad を利用して擬似ポート開放のような物を実現できないかと思慮した次第でございます。
 実現可能なサービスについて 当方の思慮している環境を構築できる既存サービスはいくつかあります。
 Cloudflare Tunnel ngrock Tailscale etc &amp;hellip; 今を馳せるクラウドネットワークリソースサービスの皆様ですね
 実装例 解説 user01はvpsに付与されているglobalIPアドレス宛に8080ポートにアクセス vpsで動作するwireguardは事前に設定されているポートとIPアドレス宛にポート転送を行う 自宅で動作しているwebサーバはwireguardの網を通してHTMLコンテンツをuser01に表示する ザックリ上記の動作を実装しました

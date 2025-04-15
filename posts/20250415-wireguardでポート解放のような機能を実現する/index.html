@@ -5,16 +5,16 @@
 <link rel=icon href=https://pabotesu.github.io/favicon.ico>
 <link rel=stylesheet href=/css/style.min.css>
 <meta property="og:site_name" content="/var/log/pabotesu">
-<meta property="og:title" content="20250415 Wireguardでポート解放のような機能を実現する">
+<meta property="og:title" content="20250415 Wireguardでポート開放のような機能を実現する">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://pabotesu.github.io/posts/20250415-wireguard%E3%81%A7%E3%83%9D%E3%83%BC%E3%83%88%E8%A7%A3%E6%94%BE%E3%81%AE%E3%82%88%E3%81%86%E3%81%AA%E6%A9%9F%E8%83%BD%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/">
 <meta property="og:description" content="my-post-contents">
 <meta name=description content="my-post-contents">
 <meta name=twitter:card content="summary_large_image">
-<meta name=twitter:title content="20250415 Wireguardでポート解放のような機能を実現する">
+<meta name=twitter:title content="20250415 Wireguardでポート開放のような機能を実現する">
 <meta name=twitter:description content="my-post-contents">
 <title>
-20250415 Wireguardでポート解放のような機能を実現する - /var/log/pabotesu
+20250415 Wireguardでポート開放のような機能を実現する - /var/log/pabotesu
 </title>
 <style>@import "https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css";code{font-family:fira code,monospace}</style>
 <script type=module>
@@ -59,10 +59,10 @@
 <ol class=breadcrumb>
 <li><a href=https://pabotesu.github.io/>Home</a>
 <li><a href=https://pabotesu.github.io/posts/>Posts</a>
-<li>20250415 Wireguardでポート解放のような機能を実現する
+<li>20250415 Wireguardでポート開放のような機能を実現する
 </ol>
 </ol>
-<span class=post-title data-pagefind-body>20250415 Wireguardでポート解放のような機能を実現する</span>
+<span class=post-title data-pagefind-body>20250415 Wireguardでポート開放のような機能を実現する</span>
 <div class=post-meta>
 <span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
 <time>2025-04-15 23:31:20</time>
@@ -100,7 +100,7 @@
 </details>
 </div>
 <article class=post-content data-pagefind-body>
-<h1 id=wireguardでポート解放のような機能を実現する>Wireguardでポート解放のような機能を実現する&nbsp;<a class=headline-hash href=#wireguardでポート解放のような機能を実現する>#</a> </h1>
+<h1 id=wireguardでポート開放のような機能を実現する>Wireguardでポート開放のような機能を実現する&nbsp;<a class=headline-hash href=#wireguardでポート開放のような機能を実現する>#</a> </h1>
 <h2 id=注意点>注意点&nbsp;<a class=headline-hash href=#注意点>#</a> </h2>
 <p>本稿で実装した機能については限定的な用途に絞っており、<br>
 読者の皆様のネットワーク環境における安全性を確実に担保する保障はございません。<br>
@@ -109,10 +109,10 @@
 <h2 id=はじまり>はじまり&nbsp;<a class=headline-hash href=#はじまり>#</a> </h2>
 <p>私事ではありますが、引越しを経て大きくネットワーク環境を変更するに至りました。<br>
 詳しい言及は本稿では避けますが、一般的なIPv6環境(MAP-Eによる広告)と相成りました。<br>
-お察しの通り、この状態だとポート解放はいささか難しいものがございます。<br>
+お察しの通り、この状態だとポート開放はいささか難しいものがございます。<br>
 特に最近の傾向ですと己がサービスをISPの網を通して公開するというのは避けがちとの所感を得ております。<br>
 そこで、<a href=https://www.wireguard.com/ target=_blank rel="noopener noreferrer">wiregurad</a>
-を利用して擬似ポート解放のような物を実現できないかと思慮した次第でございます。</p>
+を利用して擬似ポート開放のような物を実現できないかと思慮した次第でございます。</p>
 <h2 id=実現可能なサービスについて>実現可能なサービスについて&nbsp;<a class=headline-hash href=#実現可能なサービスについて>#</a> </h2>
 <p>当方の思慮している環境を構築できる既存サービスはいくつかあります。</p>
 <ul>

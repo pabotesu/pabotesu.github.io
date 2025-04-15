@@ -1,4 +1,17 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on /var/log/pabotesu</title><link>https://pabotesu.github.io/posts/</link><description>Recent content in Posts on /var/log/pabotesu</description><generator>Hugo -- gohugo.io</generator><language>ja-jp</language><copyright>&amp;copy; 2023 pabotesu</copyright><lastBuildDate>Sat, 20 Jan 2024 01:30:07 +0900</lastBuildDate><atom:link href="https://pabotesu.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>20240120 My NixOS Env</title><link>https://pabotesu.github.io/posts/20240120-my-nixos-env/</link><pubDate>Sat, 20 Jan 2024 01:30:07 +0900</pubDate><guid>https://pabotesu.github.io/posts/20240120-my-nixos-env/</guid><description>Nixという山に登る 注意点 本稿はNixで自身のデスクトップ環境を構築した際のお話となります。
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Posts on /var/log/pabotesu</title><link>https://pabotesu.github.io/posts/</link><description>Recent content in Posts on /var/log/pabotesu</description><generator>Hugo -- gohugo.io</generator><language>ja-jp</language><copyright>&amp;copy; 2023 pabotesu</copyright><lastBuildDate>Tue, 15 Apr 2025 23:31:20 +0900</lastBuildDate><atom:link href="https://pabotesu.github.io/posts/index.xml" rel="self" type="application/rss+xml"/><item><title>20250415 Wireguardでポート解放のような機能を実現する</title><link>https://pabotesu.github.io/posts/20250415-wireguard%E3%81%A7%E3%83%9D%E3%83%BC%E3%83%88%E8%A7%A3%E6%94%BE%E3%81%AE%E3%82%88%E3%81%86%E3%81%AA%E6%A9%9F%E8%83%BD%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/</link><pubDate>Tue, 15 Apr 2025 23:31:20 +0900</pubDate><guid>https://pabotesu.github.io/posts/20250415-wireguard%E3%81%A7%E3%83%9D%E3%83%BC%E3%83%88%E8%A7%A3%E6%94%BE%E3%81%AE%E3%82%88%E3%81%86%E3%81%AA%E6%A9%9F%E8%83%BD%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/</guid><description>Wireguardでポート解放のような機能を実現する 注意点 本稿で実装した機能については限定的な用途に絞っており、
+読者の皆様のネットワーク環境における安全性を確実に担保する保障はございません。
+試用される際は自己責任でお願いします。
+あと、普通に悪用厳禁です。
+はじまり 私事ではありますが、引越しを経て大きくネットワーク環境を変更するに至りました。
+詳しい言及は本稿では避けますが、一般的なIPv6環境(MAP-Eによる広告)と相成りました。
+お察しの通り、この状態だとポート解放はいささか難しいものがございます。
+特に最近の傾向ですと己がサービスをISPの網を通して公開するというのは避けがちとの所感を得ております。
+そこで、wiregurad を利用して擬似ポート解放のような物を実現できないかと思慮した次第でございます。
+実現可能なサービスについて 当方の思慮している環境を構築できる既存サービスはいくつかあります。
+Cloudflare Tunnel ngrock Tailscale etc &amp;hellip; 今を馳せるクラウドネットワークリソースサービスの皆様ですね
+実装例 解説 user01はvpsに付与されているglobalIPアドレス宛に8080ポートにアクセス vpsで動作するwireguardは事前に設定されているポートとIPアドレス宛にポート転送を行う 自宅で動作しているwebサーバはwireguardの網を通してHTMLコンテンツをuser01に表示する ザックリ上記の動作を実装しました
+詳細 vps側の設定例 vps側のIP状態
+root@vultr:~# ip a 1: lo: &amp;lt;LOOPBACK,UP,LOWER_UP&amp;gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000 link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00 inet 127.0.0.1/8 scope host lo valid_lft forever preferred_lft forever inet6 ::1/128 scope host noprefixroute valid_lft forever preferred_lft forever 2: enp1s0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu 1500 qdisc fq_codel state UP group default qlen 1000 link/ether 56:00:05:40:cc:a0 brd ff:ff:ff:ff:ff:ff inet 198.</description></item><item><title>20240120 My NixOS Env</title><link>https://pabotesu.github.io/posts/20240120-my-nixos-env/</link><pubDate>Sat, 20 Jan 2024 01:30:07 +0900</pubDate><guid>https://pabotesu.github.io/posts/20240120-my-nixos-env/</guid><description>Nixという山に登る 注意点 本稿はNixで自身のデスクトップ環境を構築した際のお話となります。
 文章内ではあくまで当方の認識や考え等も述べている箇所もございますが、齟齬等ございましたら優しくご指摘いただければ大変助かります。
 また、本稿には他の技術に対する意見や他人の感想などが記載されている箇所もあり、気分を害する場合にはブラウザバックを推奨いたします。
 （※筆者の意見ではございますが、様々な技術には一長一短があり、その特定の技術だけが全面的に優れている等は一切思っておりません。

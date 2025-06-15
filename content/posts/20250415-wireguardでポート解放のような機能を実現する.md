@@ -1,7 +1,7 @@
 ---
 title: "20250415 Wireguardでポート開放のような機能を実現する"
 date: 2025-04-15T23:31:20+09:00
-tags: ["",""]
+tags: ["wireguard","network"]
 comments: true
 showToc: true
 ---

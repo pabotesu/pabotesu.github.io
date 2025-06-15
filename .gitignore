@@ -1,0 +1,4 @@
+# nixflake
+flake.lock
+.direnv/
+.envrc

@@ -1,0 +1,469 @@
+<!doctype html><html lang=ja-jp>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=icon href=https://pabotesu.github.io/favicon.ico>
+<link rel=stylesheet href=/css/style.min.css>
+<meta property="og:site_name" content="/var/log/pabotesu">
+<meta property="og:title" content="20250614 Wireguardを利用したNATtraversalなP2P通信の実装">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pabotesu.github.io/posts/20250614-wireguard%E3%82%92%E5%88%A9%E7%94%A8%E3%81%97%E3%81%9Fnattraversal%E3%81%AAp2p%E9%80%9A%E4%BF%A1%E3%81%AE%E5%AE%9F%E8%A3%85/">
+<meta property="og:description" content="my-post-contents">
+<meta name=description content="my-post-contents">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:title content="20250614 Wireguardを利用したNATtraversalなP2P通信の実装">
+<meta name=twitter:description content="my-post-contents">
+<title>
+20250614 Wireguardを利用したNATtraversalなP2P通信の実装 - /var/log/pabotesu
+</title>
+<style>@import "https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css";code{font-family:fira code,monospace}</style>
+<script type=module>
+  import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe-lightbox.esm.min.js';
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '.post-content',
+    children: '.pswp-child',
+    pswpModule: () => import('https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.esm.min.js')
+  });
+  lightbox.init();
+</script>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.min.css>
+</head>
+<body>
+<div id=main>
+<header>
+<nav>
+<div class=site-logo>
+<a class=no-decoration href=https://pabotesu.github.io>
+/var/log/pabotesu
+</a>
+</div>
+<div class=menu-item>
+<span id=menu-button>menu</span>
+</div>
+</nav>
+<div id=popup-menu class=hide>
+<ul>
+<li>
+<a href=/about class=no-decoration>About</a>
+</li>
+<li>
+<a href=/archives class=no-decoration>Archives</a>
+</li>
+<li>
+<a href=/tags class=no-decoration>Tags</a>
+</li>
+</ul>
+</div>
+</header>
+<div class=content>
+<ol class=breadcrumb>
+<li><a href=https://pabotesu.github.io/>Home</a>
+<li><a href=https://pabotesu.github.io/posts/>Posts</a>
+<li>20250614 Wireguardを利用したNATtraversalなP2P通信の実装
+</ol>
+</ol>
+<span class=post-title data-pagefind-body>20250614 Wireguardを利用したNATtraversalなP2P通信の実装</span>
+<div class=post-meta>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+<time>2025-06-14 22:27:49</time>
+</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+<a href=https://github.com/pabotesu/pabotesu.github.io/tree/main/content/posts/20250614-wireguard%e3%82%92%e5%88%a9%e7%94%a8%e3%81%97%e3%81%9fNATtraversal%e3%81%aaP2P%e9%80%9a%e4%bf%a1%e3%81%ae%e5%ae%9f%e8%a3%85.md target=_blank rel="noopener noreferrer">History</a>
+</span>
+<div>
+<span>
+<a href=https://pabotesu.github.io/tags/wireguard/>#wireguard</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/p2p/>#p2p</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/network/>#network</a>
+</span>
+</div>
+</div>
+<div class=toc>
+<details>
+<summary>Toc</summary>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#はじめに>はじめに</a></li>
+<li><a href=#業界の動向と周辺技術>業界の動向と周辺技術</a>
+<ul>
+<li><a href=#現行vpnのネットワーク構成>現行VPNのネットワーク構成</a></li>
+<li><a href=#メッシュ型vpnの登場と再定義されるネットワーク構成>メッシュ型VPNの登場と再定義されるネットワーク構成</a></li>
+<li><a href=#メッシュ型vpnが抱える課題>メッシュ型VPNが抱える課題</a></li>
+</ul>
+</li>
+<li><a href=#p2p接続を支える技術>P2P接続を支える技術</a></li>
+<li><a href=#筆者のアプローチ---kurohabaki>筆者のアプローチ - kurohabaki</a>
+<ul>
+<li><a href=#解説>解説</a></li>
+<li><a href=#動作の確認>動作の確認</a></li>
+<li><a href=#テスト>テスト</a></li>
+<li><a href=#p2pテスト>P2Pテスト</a></li>
+</ul>
+</li>
+<li><a href=#まとめ>まとめ</a></li>
+<li><a href=#参考>参考</a></li>
+</ul>
+</nav>
+</details>
+</div>
+<article class=post-content data-pagefind-body>
+<h1 id=wireguardを利用したnattraversalなp2p通信の実装>Wireguardを利用したNATtraversalなP2P通信の実装&nbsp;<a class=headline-hash href=#wireguardを利用したnattraversalなp2p通信の実装>#</a> </h1>
+<h2 id=はじめに>はじめに&nbsp;<a class=headline-hash href=#はじめに>#</a> </h2>
+<p>インターネット越しにセキュアかつ柔軟に通信を行う手段として、WireGuard をベースにした VPN やメッシュネットワークの仕組みが注目されています。
+近年では Tailscale や ZeroTier といった製品が登場し、NAT越えやピア同士の自動接続といった課題を見事に解決しています。</p>
+<p>本記事では、WireGuard + etcdによる簡易的なP2Pメッシュネットワーク構築の実装例として、筆者が提案する「kurohabaki」というアプローチについて紹介します。</p>
+<p>「kurohabaki」は、以下のような要件を満たすシンプルな仕組みを目指して開発されました</p>
+<ul>
+<li>WireGuardを使って各ノードが相互に接続される</li>
+<li>etcdを使ってノード情報（公開鍵、IP、endpointなど）を一元管理</li>
+<li>STUN(に類似するアプローチ)を用いてNAT越しのendpoint情報を自動検出・更新</li>
+<li>Server側でPeer情報を統合し、全ノードが疎通可能な構成を維持</li>
+</ul>
+<p>これらをGo言語で実装し、Linux上で動作するクライアント・サーバ構成を実験的に作りました。
+最初は個人的なネットワーク実験環境の構築が目的でしたが、想像以上に柔軟性があり、また市販サービスの仕組みを理解する良い教材にもなりました。</p>
+<h2 id=業界の動向と周辺技術>業界の動向と周辺技術&nbsp;<a class=headline-hash href=#業界の動向と周辺技術>#</a> </h2>
+<h3 id=現行vpnのネットワーク構成>現行VPNのネットワーク構成&nbsp;<a class=headline-hash href=#現行vpnのネットワーク構成>#</a> </h3>
+<p>
+<img src=/img/20250614-kurohabaki-p2p/current_vpn.png alt=現行のVPN>
+</p>
+<p>現在主流のVPN構成は、ハブアンドスポーク型ネットワーク構成が一般的です。
+この構成では、VPNサーバが通信のハブとして機能し、各ノード（クライアント）はスポークとしてサーバ経由で他ノードと通信します。</p>
+<p>拠点間VPNのように、専用のVPN装置同士を接続する構成も存在しますが、ノード単位での接続、つまりエンドユーザ端末やサービスごとの細かな接続を行いたい場合も、基本的にはVPNサーバ（ハブ）を介した接続になります。</p>
+<p>現行のVPNの構成だと、以下の課題も存在します。</p>
+<ul>
+<li>単一障害点（SPOF）：中央のVPNサーバが停止すると、全ノード間の通信が断絶する</li>
+<li>スケーラビリティの限界：ノード数が増えると、サーバ側の負荷（CPU, メモリ, 帯域）が急増し、性能劣化や接続制限が発生しやすい</li>
+<li>レイテンシの増加：ノード間通信が常にハブを経由するため、物理的に近いノード同士でも遠回りのルートになることがある</li>
+<li>構成が固定的：クライアントは基本的にサーバを介する前提で設計されており、柔軟なピア間通信や動的構成変更が難しい</li>
+</ul>
+<p>上記の課題を解決するために、以下のような新たなVPNの構成に注目が集まっております。</p>
+<h3 id=メッシュ型vpnの登場と再定義されるネットワーク構成>メッシュ型VPNの登場と再定義されるネットワーク構成&nbsp;<a class=headline-hash href=#メッシュ型vpnの登場と再定義されるネットワーク構成>#</a> </h3>
+<p>
+<img src=/img/20250614-kurohabaki-p2p/nextgen_vpn.png alt=メッシュ型VPN>
+</p>
+<p>今までのハブアンドスポーク型のネットワーク構成から、メッシュ型のネットワーク構成を利用するVPNサービスが台頭しております。</p>
+<p>メッシュ型の構成では、各ノードが等しくネットワークに参加し、必要に応じて他ノードと直接接続して通信を行います。つまり、ノード同士がP2Pで接続し、中央のサーバを中継することなく最短経路での通信が可能になります。</p>
+<p>この構成の最大の特徴は、中央の通信ハブを必要としないことです。もちろん、ノード情報の登録やキー交換といったコントロールプレーンは必要になりますが、実際のデータ通信はノード間で完結するため、トラフィックの集中を避けることができ、構成全体がよりシンプルかつ柔軟になります。</p>
+<p>同ネットワーク構成には特に以下のような有性があります。</p>
+<ul>
+<li>スケーラビリティに優れる：ノード数が増えてもトラフィックが一箇所に集中しないため、全体のパフォーマンスが劣化しにくい。</li>
+<li>自律分散的な構成が可能：一部のノードやサーバがダウンしても、他ノード間の通信は継続できる（フォールトトレラント性の向上）。</li>
+<li>拠点・端末間通信の最適化：地理的・論理的に近いノード同士が直接接続されることで、VPN経由の遅延や帯域使用が最小化される。</li>
+<li>柔軟な拠点構成：拠点ごとにVPN装置を用意する必要がなく、ソフトウェアだけで動的に接続を構成できる。</li>
+</ul>
+<h3 id=メッシュ型vpnが抱える課題>メッシュ型VPNが抱える課題&nbsp;<a class=headline-hash href=#メッシュ型vpnが抱える課題>#</a> </h3>
+<p>メッシュ型VPNは、ノード間の直接通信を基本とすることで、レイテンシの低減やトラフィックの分散といった多くのメリットをもたらします。しかしその一方で、すべてのノードがP2Pで接続できることを前提としているため、ネットワーク越え（NAT越え）やファイアウォール通過といった技術的課題に直面します。</p>
+<h4 id=nat越えnat-traversalの必要性>NAT越え（NAT Traversal）の必要性&nbsp;<a class=headline-hash href=#nat越えnat-traversalの必要性>#</a> </h4>
+<p>多くのノードは家庭用ルータやクラウド環境の背後で動作しており、プライベートIPアドレスを持つ「NATデバイスの配下」に存在します。この場合、外部からそのノードへ直接アクセスすることができず、P2P通信が成立しないという問題が発生します。</p>
+<p>接続のためには、相手ノードのグローバルIPアドレスとポート番号（NAT変換後の情報）を取得する必要があり、NAT(本稿では主にIPマスカレード,NAPTを想定)の動的なIP:Portのマッピングに対応する必要があります。</p>
+<p>しかし、すべてのNATがこのような仕組みに対応できるわけではなく、Symmetric NAT や キャリアグレードNAT（CGN） のように、外部との直接通信が難しいケースも少なくありません。</p>
+<h4 id=ステートフルファイアウォールの存在>ステートフルファイアウォールの存在&nbsp;<a class=headline-hash href=#ステートフルファイアウォールの存在>#</a> </h4>
+<p>さらに問題を複雑にするのが、ステートフル（状態保持型）ファイアウォールの存在です。
+この種のファイアウォールは、<strong>「内から外への通信に対してのみ応答パケットを許可する」</strong> というポリシーで設計されていることが多く、外部からのP2P通信要求は通常ブロックされます。</p>
+<p>たとえNAT越えに必要なグローバル(NAT変換後)IP:Portが判明しても、ファイアウォールが初動の通信を遮断してしまうと、P2P接続そのものが成立しない可能性があります。</p>
+<h2 id=p2p接続を支える技術>P2P接続を支える技術&nbsp;<a class=headline-hash href=#p2p接続を支える技術>#</a> </h2>
+<p>メッシュ型VPNにおけるノード間通信は、基本的にSTUNとUDP Hole Punchingを活用して成立します。</p>
+<p>各ノードは起動時または定期的に、STUNサーバに対してリクエストを送信し、自分のグローバルIPアドレスとNAT変換後のポート番号を取得します。この情報は、そのノードがNAT越しに外部と通信するための「名刺」として機能し、シグナリングサーバに登録されます。</p>
+<p>次に、別のノードがこの情報を取得し、そのアドレス・ポートに対してUDPパケットを送信することでP2P接続を試みます。相手側も同様にパケットを送ることで、両者のNATテーブルが書き換わり、「UDPの通れる穴（Hole）」が一時的に開くことになります。これが UDP Hole Punching です。</p>
+<p>この通信経路が確立されると、UDPなどの通信レイヤがP2P上に展開され、通信が可能になります。さらに、Keepalive パケットを定期的に送ることで、NATによるセッションの期限切れを防ぎ、通信状態を維持し続けることができます。</p>
+<p>もし、これらの方法でP2P接続が確立できない場合には、シグナリングや中継を行うためのTURNサーバ的な機構を導入することで通信を補完するアプローチもあります。</p>
+<p>このように、メッシュVPNのP2P接続は単に「IPアドレスを知っている」だけでは成立せず、NATやファイアウォールを巧みにすり抜ける複数の技術が裏で連携することで初めて成り立っています。</p>
+<p>上記のようなP2P接続を支える技術はWebRTCなどのリアルタイム通信に必要とされ発展してきた経緯もあります。</p>
+<ul>
+<li>STUN (Session Traversal Utilities for NAT)：自身のグローバルIPアドレスおよびNAT変換後のポート番号を知るための仕組み。</li>
+<li>UDP Hole Punching：NATを動的に“開通”させる技術。双方から同時にUDPパケットを送り合うことで、ステートフルファイアウォールが通信を許可する状態を作る。</li>
+<li>シグナリングサーバ（Signaling Server）：グローバルアドレス・ポートなどの接続情報などを一時的に仲介・共有する中継点。</li>
+<li>Failover Fallback（TURN的な構造）：P2P通信が確立できなかった場合に備え、中継サーバを経由した通信に自動的に切り替える仕組み。</li>
+</ul>
+<p>動作イメージ</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>1. [Node A] STUNサーバに問い合わせ → 自身の外部IP:Portを取得
+2. [Node A] Signaling Serverに自身の外部IP:Port等の接続情報を登録
+3. [Node B] 同様にSTUNに問い合わせ、Signaling Serverに登録を実施
+4. [Node A] Signaling ServerからNode Bの接続情報を取得
+5. [Node B] Signaling ServerからNode Aの接続情報を取得
+6. [Node A &amp; B] 互いにUDPパケットを同時送信（UDP Hole Punching）
+7. [両者] NATが開通すればにUDP接続を開始
+</code></pre></div><p>
+<img src=/img/20250614-kurohabaki-p2p/udpholepunching.drawio.png alt="UDP holepunching">
+</p>
+<h2 id=筆者のアプローチ---kurohabaki>筆者のアプローチ - kurohabaki&nbsp;<a class=headline-hash href=#筆者のアプローチ---kurohabaki>#</a> </h2>
+<h3 id=解説>解説&nbsp;<a class=headline-hash href=#解説>#</a> </h3>
+<p>筆者のアプローチについて解説します。</p>
+<p>kurohabakiの最大の特徴は、専用のSTUN/TURNサーバを必要とせず、WireGuard 接続そのものを通じて NAT 越しの通信情報（endpoint）を把握し、サーバが自動で etcd に登録する構成にあります。これにより、ネットワーク構成を複雑にすることなく、NAT配下のノード同士でも直接通信が可能になります。</p>
+<p>クライアントは、サーバと WireGuard 接続を確立したのち、etcd から他ノードの接続情報を取得し、WireGuard ピアを動的に構成します。サーバ側もすべてのノードの情報を保持し、WireGuard のインターフェースと peers を通じて中心的な役割を担いますが、通信経路そのものは P2P で最適化されます。</p>
+<ul>
+<li><a href=https://github.com/pabotesu/kurohabaki-client target=_blank rel="noopener noreferrer">https://github.com/pabotesu/kurohabaki-client</a>
+</li>
+<li><a href=https://github.com/pabotesu/kurohabaki-server target=_blank rel="noopener noreferrer">https://github.com/pabotesu/kurohabaki-server</a>
+</li>
+</ul>
+<p>動作イメージ</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>1.	クライアントが起動し、自身の設定と鍵情報を読み込む
+2.	WireGuardインターフェースを作成し、サーバと接続を確立する
+3.	サーバ側でもWireGuardが動作しており、クライアントからの接続を受け入れる
+4.	サーバはWireGuard経由で接続してきたクライアントのIP:Port（＝endpoint）を把握し、etcdに登録する
+5.	クライアントはetcdから他ノードの接続情報（public_key, ipアドレス, endpointなど）を取得する
+6.	取得した情報をもとにWireGuardピアを構成し、他ノードと直接接続を試みる
+7.	複数ノード間で直接通信が成立し、メッシュ型VPNネットワークが形成される
+</code></pre></div><p>
+<img src=/img/20250614-kurohabaki-p2p/kurohabaki.drawio.png alt=kurohabaki>
+</p>
+<h3 id=動作の確認>動作の確認&nbsp;<a class=headline-hash href=#動作の確認>#</a> </h3>
+<h4 id=サーバ側の起動>サーバ側の起動&nbsp;<a class=headline-hash href=#サーバ側の起動>#</a> </h4>
+<ul>
+<li>サーバが起動したら、configを読み取り、自身の公開鍵情報・IPの情報を登録し、インターフェースを起動します。</li>
+<li>インターフェースが起動した際にはwireguard接続後のroute情報をOSに設定します。</li>
+<li>インターフェースの起動に成功すると、etcdを起動し、自らが接続します。</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@vultr:~/kurohabaki-server# ./kh-server-linux run --config ./config.yaml
+Using config file: ./config.yaml
+2025/06/15 04:48:43 kurohabaki-server starting...
+2025/06/15 04:48:43 Server will listen on 198.xxx.xxx.xxx:5yyyyy
+2025/06/15 04:48:43 WireGuard interface IP: 100.100.96.1
+2025/06/15 04:48:43 Allocated subnet range: 100.100.96.0/24
+2025/06/15 04:48:43 WireGuard interface &#39;kh0&#39; configured
+2025/06/15 04:48:43 etcd endpoint: localhost:2379
+2025/06/15 04:48:43 Registered self (XsLrrIyasNoSa6ypyOkVscSzsZaOWYAu3nRyKhr3g0U=) with IP 100.100.96.1 in etcd
+2025/06/15 04:48:43 Started peer endpoint observation loop
+</code></pre></div><h4 id=nodeの登録>nodeの登録&nbsp;<a class=headline-hash href=#nodeの登録>#</a> </h4>
+<ul>
+<li>nodeの追加にはnodeの公開鍵情報が必要となります。</li>
+<li>公開鍵情報を受け取るとetcdに接続情報を追加して、node側の設定に必要な情報を出力します。</li>
+<li>この際、wireguardのPeer情報も更新します。</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@vultr:~/kurohabaki-server# ./kh-server-linux node add &#34;0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=&#34;
+Using config file:
+
+# Client YAML configuration
+interface:
+    private_key: &lt;YOUR_PRIVATE_KEY_HERE&gt;
+    address: 100.100.96.2/32
+    dns: 100.100.96.1
+    routes:
+        - 100.100.96.0/24
+peer:
+    public_key: XsLrrIyasNoSa6ypyOkVscSzsZaOWYAu3nRyKhr3g0U=
+    endpoint: 198.xxx.xxx.xxx:5yyyyy
+    allowed_ips: 100.100.96.1/32
+    persistent_keepalive: 5
+etcd:
+    endpoint: 100.100.96.1:2379
+
+2025/06/15 04:53:00 Added peer 0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg= with IP 100.100.96.2 to WireGuard
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>interface: kh0
+  public key: XsLrrIyasNoSa6ypyOkVscSzsZaOWYAu3nRyKhr3g0U=
+  private key: (hidden)
+  listening port: 51820
+
+peer: 0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=
+  allowed ips: 100.100.96.2/32
+root@vultr:~/kurohabaki-server#
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@vultr:~/kurohabaki-server# etcdctl get /kurohabaki/nodes --prefix                 /kurohabaki/nodes/0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=/endpoint
+
+/kurohabaki/nodes/0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=/ip
+100.100.96.2
+/kurohabaki/nodes/0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=/last_seen
+2025-06-15T04:53:00Z
+/kurohabaki/nodes/XsLrrIyasNoSa6ypyOkVscSzsZaOWYAu3nRyKhr3g0U=/ip
+100.100.96.1
+/kurohabaki/nodes/XsLrrIyasNoSa6ypyOkVscSzsZaOWYAu3nRyKhr3g0U=/last_seen
+2025-06-15T04:48:43Z
+root@vultr:~/kurohabaki-server#
+</code></pre></div><h4 id=クライアント側の動作>クライアント側の動作&nbsp;<a class=headline-hash href=#クライアント側の動作>#</a> </h4>
+<ul>
+<li>クライアントはサーバから受け取った設定をもとに起動します。</li>
+<li>起動のタイミングでwireguardの接続を行うインターフェースを起動し、OSにroute情報を設定します。</li>
+<li>起動したクライアントはサーバにwireguardでの接続を試みます。</li>
+<li>サーバに対するwireguard接続に成功するとクライアント側でhttpのリクエストを叩き、etcdから自分以外の接続情報の取集を行います。</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>pabotesu@kh-client:~/kurohabaki-client$ sudo ./kh-client-linux up --config ./config.yam
+2025/06/15 13:58:46 kurohabaki client starting...
+2025/06/15 13:58:46 Bringing up WireGuard interface...
+2025/06/15 13:58:46 Created TUN device: kh0
+&lt;snip&gt;
+2025/06/15 13:58:46 Adding route to 100.100.96.0/24 via kh0
+2025/06/15 13:58:46 WireGuard interface is up
+2025/06/15 13:58:46 🔑 selfPubKey: 0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=
+2025/06/15 13:58:46 🔎 Peer count in conf: 1
+2025/06/15 13:58:46 ✅ Peers in config: 1
+2025/06/15 13:58:46 ✅ PublicKey (self): 0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=
+2025/06/15 13:58:46 ✅ etcd endpoint: 100.100.96.1:2379
+2025/06/15 13:58:46 ✅ Starting Agent...
+2025/06/15 13:58:46 🟢 Agent.Run started
+2025/06/15 13:58:46 🟢 Launching StartPeerWatcher goroutine
+2025/06/15 13:58:46 🟡 StartPeerWatcher: launched
+DEBUG: [WG-kh0] 2025/06/15 13:58:46 peer(XsLr…3g0U) - Received handshake response
+DEBUG: [WG-kh0] 2025/06/15 13:58:51 peer(XsLr…3g0U) - Sending keepalive packet
+&lt;snip&gt;
+DEBUG: [WG-kh0] 2025/06/15 13:58:46 peer(XsLr…3g0U) - Received handshake response
+DEBUG: [WG-kh0] 2025/06/15 13:58:51 peer(XsLr…3g0U) - Sending keepalive packet
+2025/06/15 13:58:56 🔵 FetchPeers: start fetching from etcd...
+2025/06/15 13:58:56 🚫 Skipping self pubKey: 0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=
+2025/06/15 13:58:56 🚫 Skipping self pubKey: 0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=
+2025/06/15 13:58:56 🚫 Skipping self pubKey: 0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg=
+2025/06/15 13:58:56 🟢 FetchPeers: 0 node(s) fetched
+2025/06/15 13:58:56 📶 Peers converted: 0
+2025/06/15 13:58:56 ✔ No peer changes detected
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>pabotesu@kh-client:~$ ip a show dev kh0
+99: kh0: &lt;POINTOPOINT,MULTICAST,NOARP,UP,LOWER_UP&gt; mtu 1420 qdisc fq_codel state UNKNOWN group default qlen 500
+    link/none
+    inet 100.100.96.2/32 scope global kh0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::df47:ae6f:e76f:824c/64 scope link stable-privacy proto kernel_ll
+       valid_lft forever preferred_lft forever
+pabotesu@kh-client:~$
+</code></pre></div><h4 id=node間接続>Node間接続&nbsp;<a class=headline-hash href=#node間接続>#</a> </h4>
+<ul>
+<li>etcdの周期的な探索のうち、新たなNodeの情報・Node情報の変更を検知すると更新された内容を取得します。</li>
+<li>取得した内容から変更された情報に沿って、Peer情報(AllowedIPsの情報も含む)を更新・追加します。</li>
+<li>Peer情報の更新に成功すると、wireguardの自動接続する習性を利用して、wireguardでの接続を試みます。</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>2025/06/15 14:07:26 🟢 FetchPeers: 1 node(s) fetched
+2025/06/15 14:07:26 🧩 Node: {PublicKey:TfIcQ2IvIYbBUr5k5pw12Fsj5CGXRA558nRTLeXRllo= IP:100.100.96.3 Endpoint:49.xxx.xxx.xxx:6xxxx LastSeen:2025-06-15 05:07:28 +0000 UTC}
+2025/06/15 14:07:26 📶 Peers converted: 1
+2025/06/15 14:07:26 ⚠ Peer list updated, applying to interface...
+2025/06/15 14:07:26 📌 AllowedIP: 100.100.96.3/32
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - UAPI: Created
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - UAPI: Updating endpoint
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - UAPI: Updating persistent keepalive interval
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - UAPI: Removing all allowedips
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - UAPI: Adding allowedip
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - Starting
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - Sending keepalive packet
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - Sending handshake initiation
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - Routine: sequential sender - started
+DEBUG: [WG-kh0] 2025/06/15 14:07:26 peer(TfIc…Rllo) - Routine: sequential receiver - started
+2025/06/15 14:07:26 ✅ Peers updated successfully
+DEBUG: [WG-kh0] 2025/06/15 14:07:31 peer(TfIc…Rllo) - Sending handshake initia
+</code></pre></div><p>接続に成功すると、wireguardのkeepalive packetを送信します</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>DEBUG: [WG-kh0] 2025/06/15 14:29:26 peer(TfIc…Rllo) - Sending keepalive packet
+DEBUG: [WG-kh0] 2025/06/15 14:29:26 peer(TfIc…Rllo) - Receiving keepalive packet
+DEBUG: [WG-kh0] 2025/06/15 14:29:29 peer(XsLr…3g0U) - Sending keepalive packet
+DEBUG: [WG-kh0] 2025/06/15 14:29:31 peer(TfIc…Rllo) - Sending keepalive packet
+DEBUG: [WG-kh0] 2025/06/15 14:29:31 peer(TfIc…Rllo) - Receiving keepalive packet
+</code></pre></div><h3 id=テスト>テスト&nbsp;<a class=headline-hash href=#テスト>#</a> </h3>
+<h4 id=ping>ping&nbsp;<a class=headline-hash href=#ping>#</a> </h4>
+<p>ネットワークに参加しているnodeのIP:100.100.96.3から、nodeのIP:100.100.96.2に対してICMPを確認してみます</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>pabotesu@win-machine:~/kurohabaki-client$ ping 100.100.96.2
+PING 100.100.96.2 (100.100.96.2) 56(84) bytes of data.
+64 bytes from 100.100.96.2: icmp_seq=1 ttl=64 time=102 ms
+64 bytes from 100.100.96.2: icmp_seq=2 ttl=64 time=238 ms
+64 bytes from 100.100.96.2: icmp_seq=3 ttl=64 time=150 ms
+^C
+--- 100.100.96.2 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2109ms
+rtt min/avg/max/mdev = 101.696/163.272/238.285/56.565 ms
+pabotesu@win-machine:~/kurohabaki-client$
+</code></pre></div><p>100.100.96.2側でも受信を確認できました。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>pabotesu@kh-client:~$ sudo tcpdump -i kh0 icmp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on kh0, link-type RAW (Raw IP), snapshot length 262144 bytes
+14:30:54.814115 IP 100.100.96.3 &gt; kh-client: ICMP echo request, id 526, seq 1, length 64
+14:30:54.814131 IP kh-client &gt; 100.100.96.3: ICMP echo reply, id 526, seq 1, length 64
+14:30:55.972220 IP 100.100.96.3 &gt; kh-client: ICMP echo request, id 526, seq 2, length 64
+14:30:55.972236 IP kh-client &gt; 100.100.96.3: ICMP echo reply, id 526, seq 2, length 64
+14:30:56.992273 IP 100.100.96.3 &gt; kh-client: ICMP echo request, id 526, seq 3, length 64
+14:30:56.992290 IP kh-client &gt; 100.100.96.3: ICMP echo reply, id 526, seq 3, length 64
+</code></pre></div><h3 id=p2pテスト>P2Pテスト&nbsp;<a class=headline-hash href=#p2pテスト>#</a> </h3>
+<p>サーバ側を落としてみます</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@vultr:~/kurohabaki-server# ./kh-server-linux run --config ./config.yaml
+Using config file: ./config.yaml
+2025/06/15 05:14:49 kurohabaki-server starting...
+2025/06/15 05:14:49 Server will listen on 198.xxx.xxx.xxx:5yyyy
+2025/06/15 05:14:49 WireGuard interface IP: 100.100.96.1
+2025/06/15 05:14:49 Allocated subnet range: 100.100.96.0/24
+2025/06/15 05:14:49 WireGuard interface &#39;kh0&#39; configured
+2025/06/15 05:14:49 etcd endpoint: localhost:2379
+2025/06/15 05:14:49 Registered self (XsLrrIyasNoSa6ypyOkVscSzsZaOWYAu3nRyKhr3g0U=) with IP 100.100.96.1 in etcd
+2025/06/15 05:14:49 Added peer 0xKh+SpOtlENMj+KrssWL7hiOWjE6rFyKjbYOKVR7zg= with IP 100.100.96.2
+2025/06/15 05:14:49 Added peer TfIcQ2IvIYbBUr5k5pw12Fsj5CGXRA558nRTLeXRllo= with IP 100.100.96.3
+2025/06/15 05:14:49 Started peer endpoint observation loop
+
+
+^C2025/06/15 05:32:55 Received signal: interrupt
+2025/06/15 05:32:55 Stopping embedded etcd...
+2025/06/15 05:32:55 🛑 Stopping embedded etcd...
+2025/06/15 05:32:55 etcd stopped successfully.
+2025/06/15 05:32:55 leaning up WireGuard interface...
+2025/06/15 05:32:55 Interface kh0 deleted
+2025/06/15 05:32:55 Exiting...
+root@vultr:~/kurohabaki-server#
+</code></pre></div><p>サーバ側でwireguardが起動していないことを確認します。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@vultr:~/kurohabaki-server# wg
+root@vultr:~/kurohabaki-server#
+</code></pre></div><p>クライアント側でも接続不可のエラーがでます</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>{&#34;level&#34;:&#34;warn&#34;,&#34;ts&#34;:&#34;2025-06-15T14:35:29.659352+0900&#34;,&#34;logger&#34;:&#34;etcd-client&#34;,&#34;caller&#34;:&#34;v3@v3.6.1/retry_interceptor.go:65&#34;,&#34;msg&#34;:&#34;retrying of unary invoker failed&#34;,&#34;target&#34;:&#34;etcd-endpoints://0xc0003281e0/100.100.96.1:2379&#34;,&#34;method&#34;:&#34;/etcdserverpb.KV/Range&#34;,&#34;attempt&#34;:0,&#34;error&#34;:&#34;rpc error: code = DeadlineExceeded desc = context deadline exceeded&#34;}
+2025/06/15 14:35:29 ❌ Failed to fetch peers from etcd: failed to fetch peers from etcd: context deadline exceeded
+</code></pre></div><p>しかし、依然node間の疎通は保たれます。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>pabotesu@win-machine:~/kurohabaki-client$ ping 100.100.96.2
+PING 100.100.96.2 (100.100.96.2) 56(84) bytes of data.
+64 bytes from 100.100.96.2: icmp_seq=1 ttl=64 time=57.9 ms
+64 bytes from 100.100.96.2: icmp_seq=2 ttl=64 time=288 ms
+64 bytes from 100.100.96.2: icmp_seq=3 ttl=64 time=75.1 ms
+64 bytes from 100.100.96.2: icmp_seq=4 ttl=64 time=338 ms
+^C
+--- 100.100.96.2 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3157ms
+rtt min/avg/max/mdev = 57.933/189.747/337.568/124.581 ms
+pabotesu@win-machine:~/kurohabaki-client$
+</code></pre></div><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>pabotesu@kh-client:~$ sudo tcpdump -i kh0 icmp
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on kh0, link-type RAW (Raw IP), snapshot length 262144 bytes
+14:35:29.213527 IP 100.100.96.3 &gt; kh-client: ICMP echo request, id 529, seq 1, length 64
+14:35:29.213559 IP kh-client &gt; 100.100.96.3: ICMP echo reply, id 529, seq 1, length 64
+14:35:30.373540 IP 100.100.96.3 &gt; kh-client: ICMP echo request, id 529, seq 2, length 64
+14:35:30.373557 IP kh-client &gt; 100.100.96.3: ICMP echo reply, id 529, seq 2, length 64
+14:35:31.332646 IP 100.100.96.3 &gt; kh-client: ICMP echo request, id 529, seq 3, length 64
+14:35:31.332662 IP kh-client &gt; 100.100.96.3: ICMP echo reply, id 529, seq 3, length 64
+14:35:32.577507 IP 100.100.96.3 &gt; kh-client: ICMP echo request, id 529, seq 4, length 64
+14:35:32.577523 IP kh-client &gt; 100.100.96.3: ICMP echo reply, id 529, seq 4, length 64
+</code></pre></div><p>以上でサーバを経由した接続ではないことがわかります。</p>
+<h2 id=まとめ>まとめ&nbsp;<a class=headline-hash href=#まとめ>#</a> </h2>
+<p>本稿では、WireGuard を用いた NAT トラバーサル対応の P2P 通信構成を実装してみました。STUN サーバを使わず、WireGuard 経由で得られる接続情報（endpoint）を活用することで、シンプルかつ暗号化された状態で通信経路を構成できるのが大きな特徴です。</p>
+<p>この方式は、構成が最小限で済み、すべての経路が WireGuard によって暗号化されるため、セキュアかつ管理しやすいネットワークを実現できます。</p>
+<p>一方で、Tailscale などの成熟した VPN プロダクトと比較すると、Symmetric NAT には現時点で対応していないという課題があります。ただし、AllowedIPs の設定を切り替えることで、サーバ中継経由の通信にフォールバックさせることも可能であり、今後の拡張として検討の余地があります。</p>
+<p>また、この方式の根本的な前提として、UDP による通信が可能であることが必要です。そのため、企業ネットワークや官公庁など、UDP 通信が制限されている環境では利用できないケースがある点には注意が必要です。TCP のみが許可されたネットワークにおいては、本方式による P2P 接続は成立しません。</p>
+<p>今後は、これらの制約への対応やフォールバック機構の追加も視野に入れつつ、より実運用に近い形へのブラッシュアップを進めていきたいと考えています。</p>
+<h2 id=参考>参考&nbsp;<a class=headline-hash href=#参考>#</a> </h2>
+<ul>
+<li><a href=https://tailscale.com/blog/how-tailscale-works target=_blank rel="noopener noreferrer">https://tailscale.com/blog/how-tailscale-works</a>
+</li>
+<li><a href=https://tailscale.com/blog/how-nat-traversal-works target=_blank rel="noopener noreferrer">https://tailscale.com/blog/how-nat-traversal-works</a>
+</li>
+<li><a href=https://tailscale.com/kb/1232/derp-servers target=_blank rel="noopener noreferrer">https://tailscale.com/kb/1232/derp-servers</a>
+</li>
+<li><a href=https://nordsecurity.com/blog/reaching-beyond-1gbps target=_blank rel="noopener noreferrer">https://nordsecurity.com/blog/reaching-beyond-1gbps</a>
+</li>
+<li><a href=https://gist.github.com/voluntas/ae72f30a5bf8db7918cd2237edd3fc50 target=_blank rel="noopener noreferrer">https://gist.github.com/voluntas/ae72f30a5bf8db7918cd2237edd3fc50</a>
+</li>
+<li><a href=https://zenn.dev/voluntas/scraps/82b9e111f43ab3 target=_blank rel="noopener noreferrer">https://zenn.dev/voluntas/scraps/82b9e111f43ab3</a>
+</li>
+<li><a href=https://pkg.go.dev/tailscale.com/wgengine/magicsock target=_blank rel="noopener noreferrer">https://pkg.go.dev/tailscale.com/wgengine/magicsock</a>
+</li>
+<li><a href=https://pdos.csail.mit.edu/papers/p2pnat.pdf target=_blank rel="noopener noreferrer">https://pdos.csail.mit.edu/papers/p2pnat.pdf</a>
+</li>
+</ul>
+</article>
+<div class=post-nav>
+<span class=post-nav-next>
+</span>
+<span class=post-nav-prev>
+<a href=https://pabotesu.github.io/posts/20250415-wireguard%E3%81%A7%E3%83%9D%E3%83%BC%E3%83%88%E8%A7%A3%E6%94%BE%E3%81%AE%E3%82%88%E3%81%86%E3%81%AA%E6%A9%9F%E8%83%BD%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+<br>
+20250415 Wireguardでポート開放のような機能を実現する
+</a>
+</span>
+</div>
+<script src=https://utteranc.es/client.js repo=pabotesu/pabotesu.github.io issue-term=pathname theme=preferred-color-scheme crossorigin=anonymous async></script>
+</div>
+<footer>
+<div class=footer-text>&copy; 2023 pabotesu Powered by <a href=https://gohugo.io target=_blank rel="noopener noreferrer">Hugo</a></div>
+</footer>
+</div>
+<script src=/js/script.min.js></script>
+</body>
+</html>

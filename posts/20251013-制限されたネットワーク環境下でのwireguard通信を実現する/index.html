@@ -1,0 +1,555 @@
+<!doctype html><html lang=ja-jp>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="width=device-width,initial-scale=1">
+<link rel=icon href=https://pabotesu.github.io/favicon.ico>
+<link rel=stylesheet href=/css/style.min.css>
+<meta property="og:site_name" content="/var/log/pabotesu">
+<meta property="og:title" content="20251013 制限されたネットワーク環境下でのWireGuard通信を実現する">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pabotesu.github.io/posts/20251013-%E5%88%B6%E9%99%90%E3%81%95%E3%82%8C%E3%81%9F%E3%83%8D%E3%83%83%E3%83%88%E3%83%AF%E3%83%BC%E3%82%AF%E7%92%B0%E5%A2%83%E4%B8%8B%E3%81%A7%E3%81%AEwireguard%E9%80%9A%E4%BF%A1%E3%82%92%E5%AE%9F%E7%8F%BE%E3%81%99%E3%82%8B/">
+<meta property="og:description" content="my-post-contents">
+<meta name=description content="my-post-contents">
+<meta name=twitter:card content="summary_large_image">
+<meta name=twitter:title content="20251013 制限されたネットワーク環境下でのWireGuard通信を実現する">
+<meta name=twitter:description content="my-post-contents">
+<title>
+20251013 制限されたネットワーク環境下でのWireGuard通信を実現する - /var/log/pabotesu
+</title>
+<style>@import "https://cdn.jsdelivr.net/npm/firacode@6.2.0/distr/fira_code.css";code{font-family:fira code,monospace}</style>
+<script type=module>
+  import PhotoSwipeLightbox from 'https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe-lightbox.esm.min.js';
+  const lightbox = new PhotoSwipeLightbox({
+    gallery: '.post-content',
+    children: '.pswp-child',
+    pswpModule: () => import('https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.esm.min.js')
+  });
+  lightbox.init();
+</script>
+<link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@5.3.4/dist/photoswipe.min.css>
+</head>
+<body>
+<div id=main>
+<header>
+<nav>
+<div class=site-logo>
+<a class=no-decoration href=https://pabotesu.github.io>
+/var/log/pabotesu
+</a>
+</div>
+<div class=menu-item>
+<span id=menu-button>menu</span>
+</div>
+</nav>
+<div id=popup-menu class=hide>
+<ul>
+<li>
+<a href=/about class=no-decoration>About</a>
+</li>
+<li>
+<a href=/archives class=no-decoration>Archives</a>
+</li>
+<li>
+<a href=/tags class=no-decoration>Tags</a>
+</li>
+</ul>
+</div>
+</header>
+<div class=content>
+<ol class=breadcrumb>
+<li><a href=https://pabotesu.github.io/>Home</a>
+<li><a href=https://pabotesu.github.io/posts/>Posts</a>
+<li>20251013 制限されたネットワーク環境下でのWireGuard通信を実現する
+</ol>
+</ol>
+<span class=post-title data-pagefind-body>20251013 制限されたネットワーク環境下でのWireGuard通信を実現する</span>
+<div class=post-meta>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+<time>2025-10-13 17:16:22</time>
+</span>
+<span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-git-commit"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+<a href=https://github.com/pabotesu/pabotesu.github.io/tree/main/content/posts/20251013-%e5%88%b6%e9%99%90%e3%81%95%e3%82%8c%e3%81%9f%e3%83%8d%e3%83%83%e3%83%88%e3%83%af%e3%83%bc%e3%82%af%e7%92%b0%e5%a2%83%e4%b8%8b%e3%81%a7%e3%81%aeWireGuard%e9%80%9a%e4%bf%a1%e3%82%92%e5%ae%9f%e7%8f%be%e3%81%99%e3%82%8b.md target=_blank rel="noopener noreferrer">History</a>
+</span>
+<div>
+<span>
+<a href=https://pabotesu.github.io/tags/wireguard/>#wireguard</a>
+</span>
+<span>
+<a href=https://pabotesu.github.io/tags/network/>#network</a>
+</span>
+</div>
+</div>
+<div class=toc>
+<details>
+<summary>Toc</summary>
+<nav id=TableOfContents>
+<ul>
+<li><a href=#概要>概要</a></li>
+<li><a href=#symmetric-nat環境でのwireguard接続>Symmetric NAT環境でのWireGuard接続</a>
+<ul>
+<li><a href=#問題の整理>問題の整理</a></li>
+<li><a href=#解決策サーバ中継によるwireguard接続>解決策：サーバ中継によるWireGuard接続</a></li>
+<li><a href=#実装例>実装例</a></li>
+<li><a href=#この方式の利点>この方式の利点</a></li>
+<li><a href=#制約事項>制約事項</a></li>
+</ul>
+</li>
+<li><a href=#udp制限厳格なファイアウォール環境での対処>UDP制限・厳格なファイアウォール環境での対処</a>
+<ul>
+<li><a href=#問題の整理-1>問題の整理</a></li>
+<li><a href=#解決策プロトコルカプセル化によるe2e接続>解決策：プロトコルカプセル化によるE2E接続</a></li>
+<li><a href=#この方式の利点-1>この方式の利点</a></li>
+<li><a href=#制約事項-1>制約事項</a></li>
+</ul>
+</li>
+<li><a href=#統合的アプローチについて>統合的アプローチについて</a>
+<ul>
+<li><a href=#既存手法の課題と限界>既存手法の課題と限界</a></li>
+<li><a href=#webrtcにおけるstunturnアーキテクチャ>WebRTCにおけるSTUN/TURNアーキテクチャ</a></li>
+<li><a href=#wireguardへのturnアプローチの応用>WireGuardへのTURNアプローチの応用</a></li>
+</ul>
+</li>
+<li><a href=#筆者のアプローチ>筆者のアプローチ</a>
+<ul>
+<li><a href=#概要-1>概要</a></li>
+<li><a href=#アプローチ>アプローチ</a></li>
+<li><a href=#設定例>設定例</a></li>
+<li><a href=#hulegu接続のアーキテクチャ図>Hulegu接続のアーキテクチャ図</a></li>
+<li><a href=#データフローの詳細>データフローの詳細</a></li>
+</ul>
+</li>
+<li><a href=#検証>検証</a>
+<ul>
+<li><a href=#サーバ実行>サーバ実行</a></li>
+<li><a href=#クライアント側の実行>クライアント側の実行</a></li>
+<li><a href=#ss4x1w8kn49o33xoqssax5sekojsjzejehtpfpeu100100024受信側の通信証左><code>/sS4x1w8/Kn49o33xOQSSaX5+SEkojsjZEJEhtpFpEU=</code>(100.100.0.24)受信側の通信証左</a></li>
+</ul>
+</li>
+<li><a href=#まとめ>まとめ</a>
+<ul>
+<li><a href=#解決した課題>解決した課題</a></li>
+<li><a href=#今後の展望>今後の展望</a></li>
+</ul>
+</li>
+<li><a href=#参考>参考</a></li>
+</ul>
+</nav>
+</details>
+</div>
+<article class=post-content data-pagefind-body>
+<h2 id=概要>概要&nbsp;<a class=headline-hash href=#概要>#</a> </h2>
+<p>以前の記事「<a href=https://pabotesu.dev/posts/20250614-wireguard%E3%82%92%E5%88%A9%E7%94%A8%E3%81%97%E3%81%9Fnattraversal%E3%81%AAp2p%E9%80%9A%E4%BF%A1%E3%81%AE%E5%AE%9F%E8%A3%85/ target=_blank rel="noopener noreferrer">WireGuardを利用したNATTraversalなP2P通信の実装</a>
+」では、WireGuardを用いたP2P通信の仕組みを実装しました。<br>
+しかし、この方式にはいくつかの制約がありました：</p>
+<ol>
+<li><strong>Symmetric NATへの対応不足</strong>: 現時点でSymmetric NAT環境での直接接続が困難</li>
+<li><strong>UDP通信の必須要件</strong>: 企業ネットワークや官公庁などでUDP通信が制限されている環境では利用不可</li>
+</ol>
+<p>これらの課題を解決するフォールバック機能として、<a href=https://github.com/pabotesu/hulegu target=_blank rel="noopener noreferrer">hulegu</a>
+というアプローチを実装しました。<br>
+huleguは、制限されたネットワーク環境下でもWireGuard通信を実現するための仕組みです。</p>
+<hr>
+<h2 id=symmetric-nat環境でのwireguard接続>Symmetric NAT環境でのWireGuard接続&nbsp;<a class=headline-hash href=#symmetric-nat環境でのwireguard接続>#</a> </h2>
+<h3 id=問題の整理>問題の整理&nbsp;<a class=headline-hash href=#問題の整理>#</a> </h3>
+<p>Symmetric NAT環境では、P2P接続が困難になる理由として、以下の点が挙げられます：</p>
+<ul>
+<li><strong>ポートマッピングの動的変更</strong>: 接続先が変わるたびにNATが新しいポートを割り当てる</li>
+<li><strong>外部からの直接接続の制限</strong>: 事前に確立されていない接続は拒否される</li>
+<li><strong>UDPホールパンチングの困難性</strong>: 従来のNATトラバーサル手法が通用しない</li>
+</ul>
+<h3 id=解決策サーバ中継によるwireguard接続>解決策：サーバ中継によるWireGuard接続&nbsp;<a class=headline-hash href=#解決策サーバ中継によるwireguard接続>#</a> </h3>
+<p>Symmetric NAT環境での最もシンプルで確実な解決策は、<strong>WireGuardサーバを中継点として利用する</strong>ことです。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>[Peer A]   [Peer B]
+    |         |
+    |         |
+    v         v
+[WireGuard Server]
+</code></pre></div><h4 id=仕組み>仕組み&nbsp;<a class=headline-hash href=#仕組み>#</a> </h4>
+<ol>
+<li>
+<p><strong>各PeerがWireGuardサーバに接続</strong></p>
+<ul>
+<li>Peer A、Peer BそれぞれがWireGuardサーバに対してVPN接続を確立</li>
+<li>サーバ側では各Peerに仮想IPアドレスを割り当て</li>
+</ul>
+</li>
+<li>
+<p><strong>サーバ経由での通信</strong></p>
+<ul>
+<li>Peer AからPeer Bへの通信は、WireGuardサーバを経由してルーティング</li>
+<li>各Peerは直接接続する必要がなく、Symmetric NATの制約を回避</li>
+</ul>
+</li>
+<li>
+<p><strong>設定の簡素化</strong></p>
+<ul>
+<li>従来のクライアント・サーバ型VPN設定と同様の構成</li>
+<li>複雑なNATトラバーサル処理は不要</li>
+</ul>
+</li>
+</ol>
+<h3 id=実装例>実装例&nbsp;<a class=headline-hash href=#実装例>#</a> </h3>
+<h4 id=サーバ側設定-etcwireguardwg0conf>サーバ側設定 (<code>/etc/wireguard/wg0.conf</code>)&nbsp;<a class=headline-hash href=#サーバ側設定-etcwireguardwg0conf>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[Interface]</span>
+<span style=color:#a6e22e>PrivateKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;サーバの秘密鍵&gt;</span>
+<span style=color:#a6e22e>Address</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.1/24</span>
+<span style=color:#a6e22e>ListenPort</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>51820</span>
+<span style=color:#a6e22e>PostUp</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE</span>
+<span style=color:#a6e22e>PostDown</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE</span>
+
+<span style=color:#75715e># Peer A</span>
+<span style=color:#66d9ef>[Peer]</span>
+<span style=color:#a6e22e>PublicKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer Aの公開鍵&gt;</span>
+<span style=color:#a6e22e>AllowedIPs</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.2/32</span>
+
+<span style=color:#75715e># Peer B</span>
+<span style=color:#66d9ef>[Peer]</span>
+<span style=color:#a6e22e>PublicKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer Bの公開鍵&gt;</span>
+<span style=color:#a6e22e>AllowedIPs</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.3/32</span>
+</code></pre></div><h4 id=peer-a設定>Peer A設定&nbsp;<a class=headline-hash href=#peer-a設定>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[Interface]</span>
+<span style=color:#a6e22e>PrivateKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer Aの秘密鍵&gt;</span>
+<span style=color:#a6e22e>Address</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.2/24</span>
+
+<span style=color:#66d9ef>[Peer]</span>
+<span style=color:#a6e22e>PublicKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;サーバの公開鍵&gt;</span>
+<span style=color:#a6e22e>Endpoint</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;サーバのパブリックIP&gt;:51820</span>
+<span style=color:#a6e22e>AllowedIPs</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.0/24</span>
+<span style=color:#a6e22e>PersistentKeepalive</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>25</span>
+</code></pre></div><h4 id=peer-b設定>Peer B設定&nbsp;<a class=headline-hash href=#peer-b設定>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[Interface]</span>
+<span style=color:#a6e22e>PrivateKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer Bの秘密鍵&gt;</span>
+<span style=color:#a6e22e>Address</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.3/24</span>
+
+<span style=color:#66d9ef>[Peer]</span>
+<span style=color:#a6e22e>PublicKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;サーバの公開鍵&gt;</span>
+<span style=color:#a6e22e>Endpoint</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;サーバのパブリックIP&gt;:51820</span>
+<span style=color:#a6e22e>AllowedIPs</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.0/24</span>
+<span style=color:#a6e22e>PersistentKeepalive</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>25</span>
+</code></pre></div><h3 id=この方式の利点>この方式の利点&nbsp;<a class=headline-hash href=#この方式の利点>#</a> </h3>
+<ul>
+<li><strong>確実性</strong>: Symmetric NAT環境でも確実に接続が可能</li>
+<li><strong>シンプルさ</strong>: 標準的なWireGuard設定のみで実現可能</li>
+<li><strong>管理性</strong>: 従来のVPN管理手法をそのまま適用可能</li>
+</ul>
+<h3 id=制約事項>制約事項&nbsp;<a class=headline-hash href=#制約事項>#</a> </h3>
+<ul>
+<li><strong>サーバリソース</strong>: 全ての通信がサーバを経由するため、帯域幅とCPUリソースが必要</li>
+<li><strong>WireGuard通信の復号・再暗号化の必要性</strong>: サーバ中継では、受信したWireGuardパケットを一度復号してから、転送先へ再度暗号化して送信する必要がある。</li>
+<li><strong>レイテンシ</strong>: 直接接続と比較して通信遅延が発生</li>
+<li><strong>単一障害点</strong>: サーバがダウンすると全体の通信が停止</li>
+</ul>
+<hr>
+<h2 id=udp制限厳格なファイアウォール環境での対処>UDP制限・厳格なファイアウォール環境での対処&nbsp;<a class=headline-hash href=#udp制限厳格なファイアウォール環境での対処>#</a> </h2>
+<h3 id=問題の整理-1>問題の整理&nbsp;<a class=headline-hash href=#問題の整理-1>#</a> </h3>
+<p>企業ネットワークや官公庁などの厳格なネットワーク環境では、以下の制限が課されることがあります：</p>
+<ul>
+<li><strong>UDP通信の全面禁止</strong>: セキュリティポリシーによりUDPプロトコルが完全にブロック</li>
+<li><strong>特定ポートのみ許可</strong>: HTTP(S)やSSHなど、限定されたポートのみが通信可能</li>
+<li><strong>プロトコル制限</strong>: TCPのみ、または特定のアプリケーションプロトコルのみが許可</li>
+</ul>
+<p>これらの環境では、WireGuardが標準で使用するUDP通信が利用できないため、別のアプローチが必要になります。</p>
+<h3 id=解決策プロトコルカプセル化によるe2e接続>解決策：プロトコルカプセル化によるE2E接続&nbsp;<a class=headline-hash href=#解決策プロトコルカプセル化によるe2e接続>#</a> </h3>
+<p>制限されたネットワーク環境での解決策として、<strong>WireGuard通信を別のプロトコルでカプセル化</strong>し、同様のプロトコルを理解するPeer同士でE2E接続を確立します。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>[WS/TLS/HTTP]   ←→ [カプセル化] ←→ [ネットワーク] ←→ [カプセル化] ←→ [WS/TLS/HTTP]
+   ↑                                                                 ↑
+WireGuard                                                       WireGuard
+   ↓                                                                 ↓
+ [Peer A]                                                       [Peer B]
+</code></pre></div><h4 id=対応プロトコル例>対応プロトコル例&nbsp;<a class=headline-hash href=#対応プロトコル例>#</a> </h4>
+<ul>
+<li><strong>WebSocket over TLS</strong>: HTTPS環境で利用可能</li>
+<li><strong>HTTP/HTTPS Tunneling</strong>: プロキシ経由での通信</li>
+<li><strong>SSH Tunneling</strong>: SSH接続が許可された環境での利用</li>
+</ul>
+<h4 id=仕組み-1>仕組み&nbsp;<a class=headline-hash href=#仕組み-1>#</a> </h4>
+<ol>
+<li>
+<p><strong>WireGuardパケットのカプセル化</strong></p>
+<ul>
+<li>送信側PeerがWireGuardパケットを指定プロトコル（例：WebSocket）でラップ</li>
+<li>ファイアウォールからは許可されたプロトコルの通信として認識</li>
+</ul>
+</li>
+<li>
+<p><strong>ネットワーク経由での転送</strong></p>
+<ul>
+<li>カプセル化されたパケットが制限されたネットワークを通過</li>
+<li>中間機器では通常のWebトラフィック等として処理</li>
+</ul>
+</li>
+<li>
+<p><strong>受信側での復元</strong></p>
+<ul>
+<li>受信側Peerがカプセル化を解除してWireGuardパケットを復元</li>
+<li>通常のWireGuard処理を継続</li>
+</ul>
+</li>
+</ol>
+<h3 id=この方式の利点-1>この方式の利点&nbsp;<a class=headline-hash href=#この方式の利点-1>#</a> </h3>
+<ul>
+<li><strong>E2E暗号化の維持</strong>: WireGuardの暗号化がそのまま保持される</li>
+<li><strong>環境適応性</strong>: 様々な制限されたネットワーク環境に対応可能</li>
+<li><strong>透過性</strong>: アプリケーションレイヤーからは通常のWireGuard接続として見える</li>
+</ul>
+<h3 id=制約事項-1>制約事項&nbsp;<a class=headline-hash href=#制約事項-1>#</a> </h3>
+<ul>
+<li><strong>1対1接続の制限</strong>: WireGuardの暗号化方式の都合により、特定のPeerとの1対1でしか利用できない</li>
+<li><strong>複数Peer接続時のコスト</strong>: 複数PeerとのE2E接続を行うには、その都度カプセル化するプロトコルチャネルが必要</li>
+<li><strong>パフォーマンスオーバーヘッド</strong>: カプセル化処理によるCPU負荷と帯域幅消費が発生</li>
+</ul>
+<blockquote>
+<p><strong>Note: WireGuardの暗号化特性と複数Peer通信の制約</strong></p>
+<p>WireGuardは接続先Peerの公開鍵情報もPeerの公開鍵で暗号化して通信を行います。
+そのため、暗号化後の通信を他のプロトコルやプロキシで読み取ろうとしても、どのPeer宛の通信か判別できません。これが複数Peer間通信を困難にする根本的な要因です。</p>
+<p><strong>既存サービでのアプローチ</strong><br>
+市場に存在する既存サービスでは、この問題を解決するためにWireGuardをユーザランドで動作させ、実際の通信制御は通信用ソケットで行い、暗号化・復号化のみにWireGuardを利用しています。
+ただし、この方式ではカーネルモジュール版のWireGuardを利用できないため、パフォーマンス面でのトレードオフが発生します。</p>
+</blockquote>
+<hr>
+<h2 id=統合的アプローチについて>統合的アプローチについて&nbsp;<a class=headline-hash href=#統合的アプローチについて>#</a> </h2>
+<h3 id=既存手法の課題と限界>既存手法の課題と限界&nbsp;<a class=headline-hash href=#既存手法の課題と限界>#</a> </h3>
+<p>これまで説明した2つの手法は、それぞれ特定の環境での課題を解決しますが、単独では以下の限界があります：</p>
+<h4 id=サーバ中継方式の限界>サーバ中継方式の限界&nbsp;<a class=headline-hash href=#サーバ中継方式の限界>#</a> </h4>
+<ul>
+<li><strong>Symmetric NAT以外での非効率性</strong>: 直接接続可能な環境でも常にサーバを経由</li>
+<li><strong>サーバの必要性</strong>:サーバロールのPeerが必ず必要</li>
+<li><strong>スケーラビリティの問題</strong>: 接続数増加に伴うサーバ負荷の線形増加</li>
+</ul>
+<h4 id=プロトコルカプセル化方式の限界>プロトコルカプセル化方式の限界&nbsp;<a class=headline-hash href=#プロトコルカプセル化方式の限界>#</a> </h4>
+<ul>
+<li><strong>複数Peer接続の複雑性</strong>: N対Nの接続でN²のカプセル化チャネルが必要</li>
+</ul>
+<h3 id=webrtcにおけるstunturnアーキテクチャ>WebRTCにおけるSTUN/TURNアーキテクチャ&nbsp;<a class=headline-hash href=#webrtcにおけるstunturnアーキテクチャ>#</a> </h3>
+<p>ノード間の直接的通信を実現するための先行的な技術領域としてWebRTCが存在します。<br>
+WebRTCでは、P2P接続が困難な環境に対する解決策として、段階的なフォールバック機構を採用しています。</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>接続試行の優先順位:
+
+1. 直接接続 (Direct Connection)
+   ↓ 失敗
+2. STUN経由のP2P接続 (NAT Traversal)
+   ↓ 失敗  
+3. TURN経由の中継接続 (Relay Connection)
+</code></pre></div><p>STUNによるNATトラバーサルを試行し、それでもP2P接続が確立できない場合（Symmetric NATや厳格なファイアウォール環境など）、<strong>TURN</strong> （Traversal Using Relays around NAT）のアプローチに切り替わります。</p>
+<h4 id=turnアプローチの仕組み>TURNアプローチの仕組み&nbsp;<a class=headline-hash href=#turnアプローチの仕組み>#</a> </h4>
+<p>TURNは、P2P接続が不可能な場合の代替え的な通信機構として機能します：</p>
+<ul>
+<li><strong>完全な中継機能</strong>: 全ての通信データをTURNサーバが中継</li>
+<li><strong>透過的な動作</strong>: TURNサーバはパケットを受け流す処理のみを実装、クライアントからは直接接続と同様に見える</li>
+<li><strong>接続保証</strong>: 制限されたネットワーク環境でも接続を確立</li>
+<li><strong>接続の維持</strong>: E2E接続の成功率を高いレベルで維持する</li>
+</ul>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>[Client A] ←→ [TURN Server] ←→ [Client B]
+</code></pre></div><h3 id=wireguardへのturnアプローチの応用>WireGuardへのTURNアプローチの応用&nbsp;<a class=headline-hash href=#wireguardへのturnアプローチの応用>#</a> </h3>
+<p>また、今回はWebRTCのTURNアーキテクチャをWireGuard環境に応用可能ではないかという点に着目しました。<br>
+TURNのアプローチに類似するものをWireGuard環境で再現し、前述の二つのアプローチの統合を行い、以下の機能の実現を目指します。</p>
+<ul>
+<li><strong>透過的な中継機能</strong>: WireGuardパケットをそのまま中継し、クライアントからは通常のWireGuard接続として見える</li>
+<li><strong>プロトコルカプセル化対応</strong>: UDP制限環境でも動作するよう、WebSocketやHTTPSなどでのカプセル化に対応</li>
+<li><strong>カーネルモジュール版でも利用可能な構成</strong>: 可能な限りWireGuardの思想や接続方式を尊重し、あくまでWireGuardにおけるE2E接続のアタッチメントのような立ち位置の構成で作成する</li>
+</ul>
+<p>これにより、WireGuard環境においてもWebRTCと同様な再現性の高いE2E接続を目指します。</p>
+<hr>
+<h2 id=筆者のアプローチ>筆者のアプローチ&nbsp;<a class=headline-hash href=#筆者のアプローチ>#</a> </h2>
+<h3 id=概要-1>概要&nbsp;<a class=headline-hash href=#概要-1>#</a> </h3>
+<p>Huleguは、前述したWebRTCのTURNアプローチをWireGuard環境に応用した中継システムです。<br>
+WireGuardの標準的な接続方式を可能な限り維持しながら、制限されたネットワーク環境でのE2E接続を実現します。</p>
+<h3 id=アプローチ>アプローチ&nbsp;<a class=headline-hash href=#アプローチ>#</a> </h3>
+<p>Huleguは、WireGuardの接続を以下の構成で実現します：</p>
+<h4 id=wireguardエンドポイントの提供とパケット中継>WireGuardエンドポイントの提供とパケット中継&nbsp;<a class=headline-hash href=#wireguardエンドポイントの提供とパケット中継>#</a> </h4>
+<ul>
+<li><strong>ローカルエンドポイントの提供</strong>: HuleguProxyが各Peerに対してローカルのWireGuardエンドポイント（UDPソケット）を提供</li>
+<li><strong>WireGuard設定の再利用性</strong>: 既存のWireGuard設定において、EndpointをHuleguProxyが提供するローカルアドレスに変更するだけで利用可能</li>
+<li><strong>プロトコル変換</strong>: HuleguProxyが受信したWireGuardパケットをWebSocketでカプセル化</li>
+<li><strong>透過的な転送</strong>: 中継サーバを経由してパケットを対向Peerに転送</li>
+<li><strong>元のWireGuard処理の継続</strong>: 受信側で元のUDPパケットに復元し、WireGuardに渡す</li>
+<li><strong>公開鍵ベースの経路選択</strong>: WebSocketでカプセル化に含まれる公開鍵情報を元に適切な転送先を決定</li>
+</ul>
+<p>この方式により、WireGuard自体は通常のE2E通信と同様に動作し、暗号化・復号化も従来通り各Peer間で実行されます。</p>
+<h3 id=設定例>設定例&nbsp;<a class=headline-hash href=#設定例>#</a> </h3>
+<h4 id=従来のwireguard設定>従来のWireGuard設定&nbsp;<a class=headline-hash href=#従来のwireguard設定>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[Interface]</span>
+<span style=color:#a6e22e>PrivateKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer Aの秘密鍵&gt;</span>
+<span style=color:#a6e22e>Address</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.2/24</span>
+
+<span style=color:#66d9ef>[Peer]</span>
+<span style=color:#a6e22e>PublicKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer Bの公開鍵&gt;</span>
+<span style=color:#a6e22e>Endpoint</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer BのパブリックIP&gt;:51820  # 直接接続</span>
+<span style=color:#a6e22e>AllowedIPs</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.3/32</span>
+</code></pre></div><h4 id=hulegu使用時のwireguard設定>hulegu使用時のWireGuard設定&nbsp;<a class=headline-hash href=#hulegu使用時のwireguard設定>#</a> </h4>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=color:#66d9ef>[Interface]</span>
+<span style=color:#a6e22e>PrivateKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer Aの秘密鍵&gt;</span>
+<span style=color:#a6e22e>Address</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.2/24</span>
+
+<span style=color:#66d9ef>[Peer]</span>
+<span style=color:#a6e22e>PublicKey</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>&lt;Peer Bの公開鍵&gt;</span>
+<span style=color:#a6e22e>Endpoint</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>127.0.0.1:51821  # HuleguProxyが提供するローカルエンドポイント</span>
+<span style=color:#a6e22e>AllowedIPs</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>10.0.0.3/32</span>
+</code></pre></div><p>WireGuardからの視点では、単にローカルの別ポートに接続しているだけのように見え、実際の中継処理はHuleguProxyが担当します。</p>
+<h3 id=hulegu接続のアーキテクチャ図>Hulegu接続のアーキテクチャ図&nbsp;<a class=headline-hash href=#hulegu接続のアーキテクチャ図>#</a> </h3>
+<p>
+<img src=/img/20251015-hulegu/hulegu-arch_white.png alt=hulegu-arch>
+</p>
+<h3 id=データフローの詳細>データフローの詳細&nbsp;<a class=headline-hash href=#データフローの詳細>#</a> </h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>1. WireGuardパケットの送信
+   [Peer A WireGuard] → UDP:127.0.0.1:xxxxx → [HuleguProxy A]
+
+2. パケットの解析とカプセル化
+   [HuleguProxy A] → 公開鍵取得 → WebSocketメッセージ化
+
+3. サーバ経由の転送
+   [HuleguProxy A] → WSS → [hulegu-server] → WSS → [HuleguProxy B]
+
+4. パケットの復元と配信
+   [HuleguProxy B] → UDPパケット復元 → UDP:51821 → [Peer B WireGuard]
+</code></pre></div><h2 id=検証>検証&nbsp;<a class=headline-hash href=#検証>#</a> </h2>
+<h3 id=サーバ実行>サーバ実行&nbsp;<a class=headline-hash href=#サーバ実行>#</a> </h3>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@vultr:~/hulegu# ./hulegu-server start --addr=:8080 --path=/ws
+Starting Hulegu server on :8080/ws
+Log level: info
+TLS disabled
+All peers allowed
+2025/10/15 12:51:57 Starting HTTP server on :8080
+</code></pre></div><h3 id=クライアント側の実行>クライアント側の実行&nbsp;<a class=headline-hash href=#クライアント側の実行>#</a> </h3>
+<p>クライアント側実行前</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>interface: wg0
+  public key: mMeSJSBdLnowAdxaU4kn4pN6+vYcMw3lwEbwusG2cx8=
+  private key: (hidden)
+  listening port: 40402
+
+peer: /sS4x1w8/Kn49o33xOQSSaX5+SEkojsjZEJEhtpFpEU=
+  allowed ips: 100.100.0.24/32
+
+peer: Qaa1DPasTqt+EBwDFMrzPO71pIdw1OSMVTIeABhdFUY=
+  allowed ips: 100.100.0.25/32
+</code></pre></div><p>クライアント実行後、endpointが更新される</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@vultr:~/hulegu# nohup ./hulegu-client start --server=ws://198.xxx.xxx.xxx:8080/ws --interface=wg0 --enable-peer=/sS4x1w8/Kn49o33xOQSSaX5+SEkojsjZEJEhtpFpEU= --enable-peer=Qaa1DPasTqt+EBwDFMrzPO71pIdw1OSMVTIeABhdFUY= &gt; client_osaka.log 2&gt;&amp;1 &amp;
+[1] 10414
+root@vultr:~/hulegu# wg
+interface: wg0
+  public key: mMeSJSBdLnowAdxaU4kn4pN6+vYcMw3lwEbwusG2cx8=
+  private key: (hidden)
+  listening port: 40402
+
+peer: /sS4x1w8/Kn49o33xOQSSaX5+SEkojsjZEJEhtpFpEU=
+  endpoint: 127.0.0.1:52453
+  allowed ips: 100.100.0.24/32
+
+peer: Qaa1DPasTqt+EBwDFMrzPO71pIdw1OSMVTIeABhdFUY=
+  endpoint: 127.0.0.1:60693
+  allowed ips: 100.100.0.25/32
+root@vultr:~/hulegu#
+</code></pre></div><p>サーバ側で接続を確認</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>2025/10/15 12:52:23 Client mMeSJSBdLnowAdxaU4kn4pN6+vYcMw3lwEbwusG2cx8= authenticated with session 0586db7084921ead5c064f88e08fa452
+</code></pre></div><p>ping実行</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@vultr:~/hulegu# ping -c2 100.100.0.24                                                                                                                                        PING 100.100.0.24 (100.100.0.24) 56(84) bytes of data.
+64 bytes from 100.100.0.24: icmp_seq=1 ttl=64 time=32.0 ms
+64 bytes from 100.100.0.24: icmp_seq=2 ttl=64 time=15.6 ms
+
+--- 100.100.0.24 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 15.607/23.806/32.005/8.199 ms
+root@vultr:~/hulegu# ping -c2 100.100.0.25                                                                                                                                        PING 100.100.0.25 (100.100.0.25) 56(84) bytes of data.
+64 bytes from 100.100.0.25: icmp_seq=1 ttl=64 time=32.8 ms
+64 bytes from 100.100.0.25: icmp_seq=2 ttl=64 time=13.9 ms
+
+--- 100.100.0.25 ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1001ms
+rtt min/avg/max/mdev = 13.895/23.368/32.842/9.473 ms
+root@vultr:~/hulegu#
+</code></pre></div><h3 id=ss4x1w8kn49o33xoqssax5sekojsjzejehtpfpeu100100024受信側の通信証左><code>/sS4x1w8/Kn49o33xOQSSaX5+SEkojsjZEJEhtpFpEU=</code>(100.100.0.24)受信側の通信証左&nbsp;<a class=headline-hash href=#ss4x1w8kn49o33xoqssax5sekojsjzejehtpfpeu100100024受信側の通信証左>#</a> </h3>
+<p>WireGuardインターフェースでも受信を確認</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@hulegu-clinet-verification01:~/hulegu# tcpdump -i wg0 -v
+tcpdump: listening on wg0, link-type RAW (Raw IP), snapshot length 262144 bytes
+21:58:29.213195 IP (tos 0x0, ttl 64, id 63938, offset 0, flags [DF], proto ICMP (1), length 84)
+    100.100.0.23 &gt; 100.100.0.24: ICMP echo request, id 7, seq 1, length 64
+21:58:29.213216 IP (tos 0x0, ttl 64, id 40187, offset 0, flags [none], proto ICMP (1), length 84)
+    100.100.0.24 &gt; 100.100.0.23: ICMP echo reply, id 7, seq 1, length 64
+21:58:30.212466 IP (tos 0x0, ttl 64, id 64717, offset 0, flags [DF], proto ICMP (1), length 84)
+    100.100.0.23 &gt; 100.100.0.24: ICMP echo request, id 7, seq 2, length 64
+21:58:30.212493 IP (tos 0x0, ttl 64, id 41002, offset 0, flags [none], proto ICMP (1), length 84)
+    100.100.0.24 &gt; 100.100.0.23: ICMP echo reply, id 7, seq 2, length 64
+^C
+4 packets captured
+4 packets received by filter
+0 packets dropped by kernel
+root@hulegu-clinet-verification01:~/hulegu#
+</code></pre></div><p>物理インターフェース側、websocketでの通信を確認</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@hulegu-client-verification01:~/hulegu# tcpdump -i eth0 -n &#39;port 8080&#39;
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on eth0, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+22:01:40.080364 IP XXX.XXX.XXX.XXX.8080 &gt; 192.168.139.168.33842: Flags [P.], seq 1596060584:1596060789, ack 620488031, win 4096, options [nop,nop,TS val 1841712726 ecr 754588659], length 205: HTTP
+22:01:40.080770 IP 192.168.139.168.33842 &gt; XXX.XXX.XXX.XXX.8080: Flags [P.], seq 1:22, ack 205, win 63, options [nop,nop,TS val 754641682 ecr 1841712726], length 21: HTTP
+22:01:40.080908 IP XXX.XXX.XXX.XXX.8080 &gt; 192.168.139.168.33842: Flags [.], ack 22, win 4095, options [nop,nop,TS val 1841712726 ecr 754641682], length 0
+22:01:40.082321 IP 192.168.139.168.33842 &gt; XXX.XXX.XXX.XXX.8080: Flags [P.], seq 22:231, ack 205, win 63, options [nop,nop,TS val 754641684 ecr 1841712726], length 209: HTTP
+22:01:40.082467 IP XXX.XXX.XXX.XXX.8080 &gt; 192.168.139.168.33842: Flags [.], ack 231, win 4094, options [nop,nop,TS val 1841712728 ecr 754641684], length 0
+22:01:40.084186 IP XXX.XXX.XXX.XXX.8080 &gt; 192.168.139.168.33842: Flags [P.], seq 205:247, ack 231, win 4096, options [nop,nop,TS val 1841712729 ecr 754641684], length 42: HTTP
+22:01:40.124985 IP 192.168.139.168.33842 &gt; XXX.XXX.XXX.XXX.8080: Flags [.], ack 247, win 63, options [nop,nop,TS val 754641727 ecr 1841712729], length 0
+22:01:41.080816 IP XXX.XXX.XXX.XXX.8080 &gt; 192.168.139.168.33842: Flags [P.], seq 247:452, ack 452, win 4096, options [nop,nop,TS val 1841713726 ecr 754641727], length 205: HTTP
+22:01:41.080865 IP 192.168.139.168.33842 &gt; XXX.XXX.XXX.XXX.8080: Flags [.], ack 452, win 63, options [nop,nop,TS val 754642682 ecr 1841713726], length 0
+22:01:41.082774 IP 192.168.139.168.33842 &gt; XXX.XXX.XXX.XXX.8080: Flags [P.], seq 231:440, ack 452, win 63, options [nop,nop,TS val 754642684 ecr 1841713726], length 209: HTTP
+22:01:41.082942 IP XXX.XXX.XXX.XXX.8080 &gt; 192.168.139.168.33842: Flags [.], ack 440, win 4094, options [nop,nop,TS val 1841713728 ecr 754642684], length 0
+</code></pre></div><p>endpointで行われる通信を確認</p>
+<div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-fallback data-lang=fallback>root@hulegu-clinet-verification01:~/hulegu# tcpdump -i lo -n &#39;port 49777&#39;
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on lo, link-type EN10MB (Ethernet), snapshot length 262144 bytes
+22:04:54.762145 IP 127.0.0.1.49777 &gt; 127.0.0.1.59631: UDP, length 148
+22:04:54.762951 IP 127.0.0.1.59631 &gt; 127.0.0.1.49777: UDP, length 92
+22:04:54.780038 IP 127.0.0.1.49777 &gt; 127.0.0.1.59631: UDP, length 128
+22:04:54.780188 IP 127.0.0.1.59631 &gt; 127.0.0.1.49777: UDP, length 128
+22:04:55.772664 IP 127.0.0.1.49777 &gt; 127.0.0.1.59631: UDP, length 128
+22:04:55.772836 IP 127.0.0.1.59631 &gt; 127.0.0.1.49777: UDP, length 128
+</code></pre></div><hr>
+<h2 id=まとめ>まとめ&nbsp;<a class=headline-hash href=#まとめ>#</a> </h2>
+<p>本記事では、制限されたネットワーク環境下でのWireGuard通信を実現するための取り組みについて解説しました。</p>
+<h3 id=解決した課題>解決した課題&nbsp;<a class=headline-hash href=#解決した課題>#</a> </h3>
+<p>前回の記事で挙げた制約に対して、huleguの実装により具体的な解決策を提示することができました。</p>
+<p>まず、Symmetric NAT環境での接続困難という課題については、パケットを復号化せずに中継する機能で通信を実現できました。
+WireGuardの設定をほぼそのまま活用しながら、公開鍵ベースの経路選択により効率的なパケット転送を可能にします。<br>
+これにより、クライアント側はアウトバウンドの通信のみで成立するため、確実な接続を確立できるようになりました。
+また、huleguでは、WireGuardパケットをWebSocketでカプセル化することで、企業ネットワークや官公庁などの厳格なファイアウォール環境でも通信を可能にしています。<br>
+加えて、この実装ではカーネルモジュール版WireGuardをそのまま利用できる利点もあります。</p>
+<h3 id=今後の展望>今後の展望&nbsp;<a class=headline-hash href=#今後の展望>#</a> </h3>
+<p>現在の実装は基礎的な中継機能を提供していますが、以下の拡張を検討しています：</p>
+<ul>
+<li><strong>自動フォールバック機能</strong>: 直接接続失敗時の自動的な中継モード切り替え</li>
+<li><strong>負荷分散機能</strong>: 複数の中継サーバによる冗長化と負荷分散</li>
+<li><strong>中継サーバ同士の通信</strong> : 中継サーバを複数設け、サーバ間で通信を行い、より広域なネットワークを確保</li>
+</ul>
+<h2 id=参考>参考&nbsp;<a class=headline-hash href=#参考>#</a> </h2>
+<ul>
+<li><a href=https://tailscale.com/kb/1232/derp-servers target=_blank rel="noopener noreferrer">https://tailscale.com/kb/1232/derp-servers</a>
+</li>
+<li><a href=https://gist.github.com/voluntas/a1d39c2b2a4392956ff69732dc493e39 target=_blank rel="noopener noreferrer">https://gist.github.com/voluntas/a1d39c2b2a4392956ff69732dc493e39</a>
+</li>
+<li><a href="https://www.youtube.com/watch?v=grDEBt7oQho" target=_blank rel="noopener noreferrer">https://www.youtube.com/watch?v=grDEBt7oQho</a>
+</li>
+<li><a href=https://github.com/jnsgruk/wireguard-over-wss target=_blank rel="noopener noreferrer">https://github.com/jnsgruk/wireguard-over-wss</a>
+</li>
+<li><a href=https://github.com/coturn/coturn target=_blank rel="noopener noreferrer">https://github.com/coturn/coturn</a>
+</li>
+<li>徹底解説 v6プラス(<a href=https://www.amazon.co.jp/%E5%BE%B9%E5%BA%95%E8%A7%A3%E8%AA%AC-v6%E3%83%97%E3%83%A9%E3%82%B9-%E5%B0%8F%E5%B7%9D%E6%99%83%E9%80%9A/dp/4908686084 target=_blank rel="noopener noreferrer">https://www.amazon.co.jp/%E5%BE%B9%E5%BA%95%E8%A7%A3%E8%AA%AC-v6%E3%83%97%E3%83%A9%E3%82%B9-%E5%B0%8F%E5%B7%9D%E6%99%83%E9%80%9A/dp/4908686084</a>
+)</li>
+<li><a href=https://docs.netbird.io/about-netbird/how-netbird-works target=_blank rel="noopener noreferrer">https://docs.netbird.io/about-netbird/how-netbird-works</a>
+</li>
+</ul>
+</article>
+<div class=post-nav>
+<span class=post-nav-next>
+</span>
+<span class=post-nav-prev>
+<a href=https://pabotesu.github.io/posts/20250614-wireguard%E3%82%92%E5%88%A9%E7%94%A8%E3%81%97%E3%81%9Fnattraversal%E3%81%AAp2p%E9%80%9A%E4%BF%A1%E3%81%AE%E5%AE%9F%E8%A3%85/><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentcolor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-right"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+<br>
+20250614 Wireguardを利用したNATtraversalなP2P通信の実装
+</a>
+</span>
+</div>
+<script src=https://utteranc.es/client.js repo=pabotesu/pabotesu.github.io issue-term=pathname theme=preferred-color-scheme crossorigin=anonymous async></script>
+</div>
+<footer>
+<div class=footer-text>&copy; 2023 pabotesu Powered by <a href=https://gohugo.io target=_blank rel="noopener noreferrer">Hugo</a></div>
+</footer>
+</div>
+<script src=/js/script.min.js></script>
+</body>
+</html>
